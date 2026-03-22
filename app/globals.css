@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 248 249 250;
+  --surface: 248 249 250;
+  --surface-bright: 248 249 250;
+  --surface-dim: 217 218 219;
+  --surface-container-lowest: 255 255 255;
+  --surface-container-low: 243 244 245;
+  --surface-container: 237 238 239;
+  --surface-container-high: 231 232 233;
+  --surface-container-highest: 225 227 228;
+  --primary: 0 47 80;
+  --primary-container: 24 70 108;
+  --primary-fixed: 207 229 255;
+  --primary-fixed-dim: 162 202 247;
+  --secondary: 76 97 108;
+  --secondary-container: 207 230 242;
+  --tertiary: 78 32 19;
+  --tertiary-container: 105 53 39;
+  --tertiary-fixed: 255 219 209;
+  --tertiary-fixed-dim: 255 181 161;
+  --on-primary: 255 255 255;
+  --on-primary-container: 140 180 223;
+  --on-primary-fixed: 0 29 52;
+  --on-primary-fixed-variant: 29 73 111;
+  --on-secondary: 255 255 255;
+  --on-secondary-container: 82 103 114;
+  --on-secondary-fixed: 7 30 39;
+  --on-secondary-fixed-variant: 53 74 83;
+  --on-surface: 25 28 29;
+  --on-surface-variant: 63 73 69;
+  --outline: 112 121 117;
+  --outline-variant: 191 201 196;
+  --surface-tint: 56 97 136;
+  --error: 186 26 26;
+  --error-container: 255 218 214;
+  --on-error: 255 255 255;
+  --on-error-container: 147 0 10;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--surface));
+  color: rgb(var(--on-surface));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+::selection {
+  background: rgb(var(--primary-fixed));
+}
+
+.glass-panel {
+  background: rgba(248, 249, 250, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.premium-gradient {
+  background: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--primary-container)) 100%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.page-break-avoid {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-paper {
+  width: 210mm;
+  min-height: 297mm;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .screen-only,
+  .screen-only * {
+    display: none !important;
+  }
+
+  .print-shell {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .print-friendly {
+    box-shadow: none !important;
+    border: 0 !important;
+    outline: none !important;
+    margin: 0 auto !important;
+  }
+
+  .resume-paper {
+    width: auto !important;
+    min-height: auto !important;
+  }
+}
