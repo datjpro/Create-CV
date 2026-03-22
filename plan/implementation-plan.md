@@ -154,3 +154,4 @@
 - Dùng Firebase client SDK trực tiếp ở frontend
 - Lưu dữ liệu bằng nút `Save`, không autosave liên tục
 - PDF export ưu tiên Chromium và dùng flow in trình duyệt theo A4 multi-page
+
