@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { TemplateSwitcher } from "@/components/editor/template-switcher";
@@ -53,6 +54,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const printRef = useRef<HTMLDivElement | null>(null);
   const resume = useResumeEditorStore((state) => state.resume);
   const dirty = useResumeEditorStore((state) => state.dirty);
   const activeSection = useResumeEditorStore((state) => state.activeSection);
@@ -166,6 +168,11 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   }, [resume]);
 
   const activeTemplate = templateLibrary.find((template) => template.id === resume?.templateId);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: resume?.title ? `${resume.title.replace(/\s+/g, "-").toLowerCase()}` : "resume",
+    pageStyle: "@page { size: A4; margin: 12mm; }"
+  });
 
   async function handleSave() {
     if (!resume) {
@@ -258,9 +265,9 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             </button>
             <button
               type="button"
-              disabled
-              className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-on-primary opacity-60"
-              title="PDF export lands in the next phase"
+              onClick={() => handlePrint()}
+              className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95"
+              title="Use Save as PDF in your browser print dialog. Turn off browser headers and footers for the cleanest result."
             >
               Export PDF
             </button>
@@ -528,7 +535,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
               {activeTemplate?.category ?? resume.templateId}
             </div>
           </div>
-          <div className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
+          <div className="screen-only mx-auto mb-4 max-w-[960px] text-right text-xs text-on-surface-variant">
+            Use your browser print dialog and turn off headers and footers for the cleanest PDF.
+          </div>
+          <div ref={printRef} className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
             <ResumeDocumentPreview resume={resume} />
           </div>
         </section>
@@ -536,6 +546,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
+
+
 
 
 
