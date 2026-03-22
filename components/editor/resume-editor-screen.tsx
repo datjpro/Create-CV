@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { TemplateSwitcher } from "@/components/editor/template-switcher";
 import { ResumeDocumentPreview } from "@/components/resume/resume-document-preview";
 import { getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
-import type { ResumeDocument, ResumeFormSection, TemplateId } from "@/lib/types";
+import { templateLibrary } from "@/lib/template-library";
+import type { ResumeDocument, ResumeFormSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useResumeEditorStore } from "@/store/resume-editor-store";
 
@@ -18,12 +20,6 @@ const sections: Array<{ id: ResumeFormSection; label: string }> = [
   { id: "education", label: "Education" },
   { id: "skills", label: "Skills" },
   { id: "projects", label: "Projects" }
-];
-
-const templateOptions: Array<{ id: TemplateId; label: string }> = [
-  { id: "professional", label: "Professional" },
-  { id: "minimal", label: "Minimal" },
-  { id: "creative", label: "Creative" }
 ];
 
 const inputClass =
@@ -168,6 +164,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
 
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
   }, [resume]);
+
+  const activeTemplate = templateLibrary.find((template) => template.id === resume?.templateId);
 
   async function handleSave() {
     if (!resume) {
@@ -315,20 +313,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                 </div>
                 <div className="md:col-span-2">
                   <FieldLabel>Template style</FieldLabel>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {templateOptions.map((template) => (
-                      <button
-                        key={template.id}
-                        type="button"
-                        onClick={() => updateTemplate(template.id)}
-                        className={cn(
-                          "rounded-full px-4 py-2 text-sm font-semibold transition",
-                          resume.templateId === template.id ? "bg-primary text-on-primary" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high"
-                        )}
-                      >
-                        {template.label}
-                      </button>
-                    ))}
+                  <div className="mt-3">
+                    <TemplateSwitcher selectedTemplate={resume.templateId} onSelect={updateTemplate} />
                   </div>
                 </div>
                 <div className="md:col-span-2 flex flex-wrap items-center gap-4">
@@ -536,10 +522,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
           <div className="screen-only mx-auto mb-4 flex max-w-[960px] items-center justify-between rounded-[1.5rem] bg-surface-container-lowest px-5 py-4 shadow-sm">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.26em] text-primary">Live preview</div>
-              <p className="mt-1 text-sm text-on-surface-variant">Changes on the left update this document immediately.</p>
+              <p className="mt-1 text-sm text-on-surface-variant">{activeTemplate ? `${activeTemplate.name} • ${activeTemplate.hook}` : "Changes on the left update this document immediately."}</p>
             </div>
             <div className="rounded-full bg-surface-container-high px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-on-surface-variant">
-              {resume.templateId}
+              {activeTemplate?.category ?? resume.templateId}
             </div>
           </div>
           <div className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
@@ -550,4 +536,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
+
+
+
+
 
