@@ -32,7 +32,7 @@
 - Hoàn thành: `2026-03-22`
 
 ## Phase 2. Marketing và Template Library `feat/marketing-and-template-library`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Dựng `/` theo `stitch (6)`
   - Dựng `/templates` theo `stitch (4)`
@@ -43,9 +43,10 @@
   - CTA điều hướng đúng
 - Commit gợi ý:
   - `feat: build landing page and template library`
+- Hoàn thành: `2026-03-22`
 
 ## Phase 3. Authentication `feat/firebase-auth`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Firebase Auth với Email/Password, Google, GitHub
   - Dựng `/login` và `/register`
@@ -55,9 +56,10 @@
   - Login, signup, logout, provider login chạy đủ luồng
 - Commit gợi ý:
   - `feat: add firebase authentication with email google github`
+- Hoàn thành: `2026-03-22`
 
 ## Phase 4. Dashboard và dữ liệu CV `feat/resume-data-dashboard`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Thiết kế schema Firestore cho CV
   - Dựng `/dashboard` theo `stitch (7)`
@@ -68,23 +70,25 @@
   - Rules chặn truy cập sai user
 - Commit gợi ý:
   - `feat: implement resume dashboard and firestore data model`
+- Hoàn thành: `2026-03-22`
 
 ## Phase 5. Editor và Real-time Preview `feat/editor-live-preview`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Dựng `/resume/[resumeId]/edit` theo `stitch (8)`
   - Form cho personal info, summary, experience, education, skills, projects
   - Zustand store đồng bộ form và preview
-  - Upload avatar bằng Firebase Storage
+  - Avatar upload được hoãn khi không dùng Blaze; editor giữ avatar placeholder
   - Lưu thủ công bằng nút `Save`
 - Điều kiện hoàn thành:
   - Preview cập nhật tức thời
   - Reload vẫn nạp lại dữ liệu đã lưu
 - Commit gợi ý:
   - `feat: add resume editor with live preview`
+- Hoàn thành: `2026-03-22`
 
 ## Phase 6. Template renderers `feat/template-renderers`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Dựng 3 template `minimal`, `professional`, `creative`
   - Dùng chung một schema dữ liệu CV
@@ -94,9 +98,10 @@
   - Chuyển template ngay trong editor mượt
 - Commit gợi ý:
   - `feat: add template switching renderers`
+- Hoàn thành: `2026-03-22`
 
 ## Phase 7. Export PDF `feat/pdf-export-print`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Tích hợp `react-to-print`
   - Chuẩn hóa preview theo A4
@@ -108,9 +113,10 @@
   - Text selectable, thân thiện ATS
 - Commit gợi ý:
   - `feat: implement multi-page A4 pdf export`
+- Hoàn thành: `2026-03-22`
 
 ## Phase 8. QA, polish và release `chore/qa-polish-release`
-- Trạng thái: `[ ]`
+- Trạng thái: `[x]`
 - Mục tiêu:
   - Loading, error, empty states
   - Responsive mobile cho auth, dashboard, editor
@@ -122,6 +128,13 @@
   - Tài liệu setup đủ để chạy lại dự án
 - Commit gợi ý:
   - `chore: polish qa docs and release flow`
+- Hoàn thành: `2026-03-22`
+
+## Deferred sau MVP
+- `[ ]` Avatar upload qua Firebase Storage
+  - Lý do: project không dùng Blaze nên chưa bật Storage thật
+  - Trạng thái hiện tại: editor không upload avatar, dùng placeholder an toàn
+  - Hướng bổ sung sau: resize + nén ảnh ở client, upload Storage, lưu URL/path vào Firestore
 
 ## Test plan bắt buộc
 - Auth:
@@ -138,14 +151,13 @@
 - Editor:
   - Nhập dữ liệu là preview cập nhật ngay
   - Đổi template không mất dữ liệu
-  - Upload avatar
   - Save và reload giữ nguyên dữ liệu
 - PDF:
   - CV ngắn ra 1 trang
   - CV dài tự ngắt nhiều trang A4
   - Text copy được
 - Security:
-  - Firestore và Storage rules không cho user truy cập dữ liệu người khác
+  - Firestore rules không cho user truy cập dữ liệu người khác
 
 ## Giả định đã chốt
 - Repo hiện chỉ có `main`, nên sẽ tạo thêm `dev`
@@ -154,10 +166,4 @@
 - Dùng Firebase client SDK trực tiếp ở frontend
 - Lưu dữ liệu bằng nút `Save`, không autosave liên tục
 - PDF export ưu tiên Chromium và dùng flow in trình duyệt theo A4 multi-page
-
-
-
-
-
-
-
+- Không dùng Firebase Storage ở giai đoạn hiện tại nếu project không nâng Blaze

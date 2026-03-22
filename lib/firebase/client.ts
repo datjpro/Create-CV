@@ -13,7 +13,8 @@ const app = isFirebaseConfigured
       projectId: firebaseEnv.projectId,
       storageBucket: firebaseEnv.storageBucket,
       messagingSenderId: firebaseEnv.messagingSenderId,
-      appId: firebaseEnv.appId
+      appId: firebaseEnv.appId,
+      measurementId: firebaseEnv.measurementId
     })
   : null;
 
