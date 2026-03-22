@@ -1,12 +1,15 @@
-import { PlaceholderPage } from "@/components/ui/placeholder-page";
+﻿import { PrivatePlaceholder } from "@/components/auth/private-placeholder";
+import { PrivateRouteShell } from "@/components/auth/private-route-shell";
 
 export default function ResumeEditorPage() {
   return (
-    <PlaceholderPage
-      eyebrow="Editor"
-      title="Editor route scaffolded"
-      description="The real-time preview, multi-step editor, template switcher, and PDF export will land on this route in later phases."
-      links={[{ href: "/dashboard", label: "Back to Dashboard" }]}
-    />
+    <PrivateRouteShell>
+      <PrivatePlaceholder
+        eyebrow="Editor"
+        title="Protected editor route is ready."
+        description="The split editor and live preview will be mounted here after the dashboard data flow is in place."
+        actions={[{ href: "/dashboard", label: "Back to dashboard" }]}
+      />
+    </PrivateRouteShell>
   );
 }
