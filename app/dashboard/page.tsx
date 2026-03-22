@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PrivateRouteShell } from "@/components/auth/private-route-shell";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
+import { DashboardMobileBar } from "@/components/dashboard/dashboard-mobile-bar";
 import { ResumeCard } from "@/components/dashboard/resume-card";
 import { deleteResumeById, duplicateResume, listResumes } from "@/lib/services/resume-service";
 import type { ResumeDocument } from "@/lib/types";
@@ -81,6 +82,7 @@ function DashboardContent() {
       <DashboardSidebar />
       <div className="flex-1 px-6 py-8 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-6xl">
+          <DashboardMobileBar />
           <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Dashboard</span>
@@ -108,7 +110,7 @@ function DashboardContent() {
             ))}
           </section>
 
-          {error ? <div className="mb-6 rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container">{error}</div> : null}
+          {error ? <div className="mb-6 flex flex-col gap-3 rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container sm:flex-row sm:items-center sm:justify-between"><span>{error}</span><button type="button" onClick={() => refresh()} className="rounded-xl bg-white/70 px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-error">Retry</button></div> : null}
 
           <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             <Link
@@ -155,3 +157,5 @@ export default function DashboardPage() {
     </PrivateRouteShell>
   );
 }
+
+
