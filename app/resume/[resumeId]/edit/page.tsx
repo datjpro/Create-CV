@@ -6,8 +6,8 @@ export default function ResumeEditorPage() {
     <PrivateRouteShell>
       <PrivatePlaceholder
         eyebrow="Editor"
-        title="Protected editor route is ready."
-        description="The split editor and live preview will be mounted here after the dashboard data flow is in place."
+        title="Resume document route is now data-backed."
+        description="The create flow already redirects here with a real resume id. The full split editor and live preview will land in the next phase."
         actions={[{ href: "/dashboard", label: "Back to dashboard" }]}
       />
     </PrivateRouteShell>
