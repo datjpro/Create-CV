@@ -8,7 +8,7 @@ import { useReactToPrint } from "react-to-print";
 import { useAuth } from "@/components/auth/auth-provider";
 import { TemplateSwitcher } from "@/components/editor/template-switcher";
 import { ResumeDocumentPreview } from "@/components/resume/resume-document-preview";
-import { getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
+import { getResume, saveResume } from "@/lib/services/resume-service";
 import { templateLibrary } from "@/lib/template-library";
 import type { ResumeDocument, ResumeFormSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -53,7 +53,6 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const { user } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const printRef = useRef<HTMLDivElement | null>(null);
   const resume = useResumeEditorStore((state) => state.resume);
   const dirty = useResumeEditorStore((state) => state.dirty);
@@ -77,12 +76,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const updateProject = useResumeEditorStore((state) => state.updateProject);
   const addProject = useResumeEditorStore((state) => state.addProject);
   const removeProject = useResumeEditorStore((state) => state.removeProject);
-  const setAvatarUrl = useResumeEditorStore((state) => state.setAvatarUrl);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [mobileView, setMobileView] = useState<"build" | "preview">("build");
   const [skillInput, setSkillInput] = useState("");
@@ -193,30 +190,6 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     }
   }
 
-  async function handleAvatarUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    if (!user || !resume) {
-      return;
-    }
-
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    setUploading(true);
-    setError("");
-
-    try {
-      const avatarUrl = await uploadAvatar(user.uid, resume.id, file);
-      setAvatarUrl(avatarUrl);
-      setStatusMessage("Avatar uploaded.");
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to upload avatar.");
-    } finally {
-      setUploading(false);
-    }
-  }
-
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface px-6">
@@ -312,7 +285,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             {statusMessage ? <div className="rounded-2xl bg-primary-fixed px-4 py-3 text-sm text-on-primary-fixed-variant">{statusMessage}</div> : null}
             {error ? <div className="rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container">{error}</div> : null}
 
-            <SectionCard active={activeSection === "personal"} title="Resume settings" description="Control the document title, avatar and profile details shown in the preview.">
+            <SectionCard active={activeSection === "personal"} title="Resume settings" description="Control the document title, template and profile details shown in the preview.">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <FieldLabel>Resume title</FieldLabel>
@@ -327,15 +300,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                 <div className="md:col-span-2 flex flex-wrap items-center gap-4">
                   {resume.avatarUrl ? <img src={resume.avatarUrl} alt={resume.personal.fullName} className="h-16 w-16 rounded-2xl object-cover" /> : <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-fixed text-lg font-bold text-primary">{resume.personal.fullName.slice(0, 1) || "A"}</div>}
                   <div>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="rounded-xl bg-surface-container-low px-4 py-2 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high"
-                    >
-                      {uploading ? "Uploading..." : "Upload avatar"}
-                    </button>
-                    <p className="mt-2 text-xs text-on-surface-variant">PNG or JPG works. Stored per resume.</p>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                    <div className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface">Avatar upload deferred</div>
+                    <p className="mt-2 max-w-md text-xs leading-5 text-on-surface-variant">
+                      Avatar upload is temporarily disabled while the project stays off the Firebase Blaze plan. You can keep editing all text content and export PDF normally.
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -546,10 +514,3 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
-
-
-
-
-
-
-

@@ -7,12 +7,13 @@ Create-CV is a Bun-managed Next.js resume builder that combines:
 - a split resume editor with real-time preview
 - three renderer styles: Professional, Minimal, Creative
 - browser-native PDF export using `react-to-print`
+- avatar upload currently deferred while the project stays off Firebase Blaze
 
 ## Stack
 - Bun for package management and scripts
 - Next.js App Router + React + TypeScript
 - Tailwind CSS with a custom design-token layer from `DESIGN.md`
-- Firebase Auth, Firestore and Storage when env vars are provided
+- Firebase Auth and Firestore when env vars are provided
 - Local demo auth/data mode when Firebase is not configured
 - Zustand for editor state synchronization
 
@@ -41,6 +42,7 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 ```
 
 If those values are missing, the app automatically runs in demo mode:
@@ -51,6 +53,17 @@ If those values are missing, the app automatically runs in demo mode:
 Firebase rules are included here:
 - `firebase/firestore.rules`
 - `firebase/storage.rules`
+
+Do not replace `firebase/firestore.rules` with a global deny-all rule like:
+- `allow read, write: if false;`
+
+That rule is safe as a temporary lockdown, but it will block all resume CRUD flows in this app. The included rules already scope access to the signed-in owner only.
+
+If you stay on the free plan and do not enable Firebase Storage with Blaze:
+- Authentication still works
+- Firestore resume CRUD still works
+- live preview, template switching and PDF export still work
+- avatar upload is intentionally disabled in the editor for now
 
 ## Scripts
 - `bun run dev`
