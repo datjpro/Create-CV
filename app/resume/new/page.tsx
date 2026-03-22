@@ -1,12 +1,15 @@
-import { PlaceholderPage } from "@/components/ui/placeholder-page";
+﻿import { PrivatePlaceholder } from "@/components/auth/private-placeholder";
+import { PrivateRouteShell } from "@/components/auth/private-route-shell";
 
 export default function NewResumePage() {
   return (
-    <PlaceholderPage
-      eyebrow="Resume Creation"
-      title="Resume creation workflow placeholder"
-      description="This route will create a new resume document and redirect into the split editor during the data/dashboard phase."
-      links={[{ href: "/dashboard", label: "Back to Dashboard" }]}
-    />
+    <PrivateRouteShell>
+      <PrivatePlaceholder
+        eyebrow="Resume creation"
+        title="Protected creation route is ready."
+        description="This route now requires authentication and is ready for the Firestore-backed create-and-redirect flow in the next phase."
+        actions={[{ href: "/dashboard", label: "Back to dashboard" }]}
+      />
+    </PrivateRouteShell>
   );
 }

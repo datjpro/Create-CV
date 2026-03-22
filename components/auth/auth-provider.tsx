@@ -1,28 +1,58 @@
-"use client";
+﻿"use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { PropsWithChildren } from "react";
 
+import {
+  getResolvedAuthMode,
+  loginWithEmail,
+  loginWithGithub,
+  loginWithGoogle,
+  logout,
+  registerWithEmail,
+  subscribeToAuthState
+} from "@/lib/services/auth-service";
 import type { AppUser } from "@/lib/types";
 
 type AuthContextValue = {
   user: AppUser | null;
   loading: boolean;
-  setUser: (user: AppUser | null) => void;
+  authMode: "firebase" | "demo";
+  loginWithEmail: (payload: { email: string; password: string }) => Promise<AppUser>;
+  registerWithEmail: (payload: { email: string; password: string; displayName: string }) => Promise<AppUser>;
+  loginWithGoogle: () => Promise<AppUser>;
+  loginWithGithub: () => Promise<AppUser>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AppUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const authMode = getResolvedAuthMode();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthState((nextUser) => {
+      setUser(nextUser);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      loading: false,
-      setUser
+      loading,
+      authMode,
+      loginWithEmail,
+      registerWithEmail,
+      loginWithGoogle,
+      loginWithGithub,
+      logout
     }),
-    [user]
+    [user, loading, authMode]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
