@@ -36,7 +36,7 @@ export function DashboardMobileBar() {
         </button>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Link href="/resume/new?template=professional" className="premium-gradient rounded-xl px-4 py-2 text-sm font-bold text-on-primary">
+        <Link href="/resume/new" className="premium-gradient rounded-xl px-4 py-2 text-sm font-bold text-on-primary">
           New resume
         </Link>
         <Link href="/templates" className="rounded-xl bg-surface-container-high px-4 py-2 text-sm font-bold text-on-surface">

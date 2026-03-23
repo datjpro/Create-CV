@@ -18,7 +18,7 @@ export default function HomePage() {
               Build your professional CV with real, editable content.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant sm:text-2xl">
-              Start from an ATS-safe one-column template, write your own story and export recruiter-friendly PDFs without hardcoded sample resumes.
+              Start from an ATS-safe template, write your own story and export recruiter-friendly PDFs without hardcoded sample resumes.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <MarketingResumeLink

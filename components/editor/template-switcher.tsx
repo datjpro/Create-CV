@@ -14,7 +14,7 @@ export function TemplateSwitcher({
   onSelect: (templateId: TemplateId) => void;
 }) {
   return (
-    <div className="grid gap-3 md:grid-cols-3">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       {templateLibrary.map((template) => (
         <button
           key={template.id}

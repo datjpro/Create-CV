@@ -15,7 +15,7 @@ export default function TemplatesPage() {
             Choose an ATS-safe style and write your own story.
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-on-surface-variant">
-            Every template keeps a single-column reading order, supports live editing and lets you write real content instead of starting from locked sample text.
+            Every template keeps a recruiter-safe reading flow, supports live editing and lets you write real content instead of starting from locked sample text.
           </p>
         </header>
 

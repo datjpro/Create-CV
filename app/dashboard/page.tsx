@@ -95,7 +95,7 @@ function DashboardContent() {
               <Link href="/templates" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest">
                 Browse templates
               </Link>
-              <Link href="/resume/new?template=professional" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95">
+              <Link href="/resume/new" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95">
                 New resume
               </Link>
             </div>
@@ -114,7 +114,7 @@ function DashboardContent() {
 
           <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             <Link
-              href="/resume/new?template=professional"
+              href="/resume/new"
               className="flex min-h-[420px] flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-outline-variant bg-surface-container-low text-center transition hover:border-primary hover:bg-white"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-fixed text-3xl font-bold text-primary">+</div>
@@ -132,7 +132,7 @@ function DashboardContent() {
                   Create your first resume from the dashboard or start from the template gallery. Your documents stay scoped to your signed-in account and begin with editable real-content placeholders.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link href="/resume/new?template=professional" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary">Create resume</Link>
+                  <Link href="/resume/new" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary">Create resume</Link>
                   <Link href="/templates" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface">Open templates</Link>
                 </div>
               </div>

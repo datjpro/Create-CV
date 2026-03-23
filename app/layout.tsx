@@ -25,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${manrope.variable} bg-surface text-on-surface`}>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning className={`${inter.variable} ${manrope.variable} bg-surface text-on-surface`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
