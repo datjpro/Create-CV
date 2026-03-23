@@ -1,288 +1,269 @@
-﻿/* eslint-disable @next/next/no-img-element */
-import type { ResumeDocument } from "@/lib/types";
-import { formatDateRange } from "@/lib/utils";
+﻿import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
+import type { ResumeContentSection, ResumeDocument, TemplateId } from "@/lib/types";
+import { cn, formatDateRange } from "@/lib/utils";
 
-function ResumeHeader({ resume, inverse = false }: { resume: ResumeDocument; inverse?: boolean }) {
+type PreviewTheme = {
+  shell: string;
+  divider: string;
+  heading: string;
+  accentText: string;
+  tag: string;
+  card: string;
+};
+
+const previewThemes: Record<TemplateId, PreviewTheme> = {
+  professional: {
+    shell: "resume-paper print-friendly rounded-[1.5rem] bg-white p-10 shadow-float",
+    divider: "border-primary/20",
+    heading: "text-primary border-primary/60",
+    accentText: "text-primary",
+    tag: "bg-primary-fixed text-on-primary-fixed-variant",
+    card: "bg-surface-container-low"
+  },
+  minimal: {
+    shell: "resume-paper print-friendly rounded-[1.5rem] border border-outline-variant/40 bg-white p-12 shadow-float",
+    divider: "border-outline-variant/40",
+    heading: "text-on-surface border-outline-variant/60",
+    accentText: "text-on-surface-variant",
+    tag: "bg-surface-container-low text-on-surface",
+    card: "bg-surface-container-low"
+  },
+  creative: {
+    shell: "resume-paper print-friendly rounded-[1.5rem] border border-primary/15 bg-white p-10 shadow-float",
+    divider: "border-primary/25",
+    heading: "text-primary border-primary",
+    accentText: "text-primary",
+    tag: "bg-primary/10 text-primary",
+    card: "bg-primary/5"
+  }
+};
+
+function hasText(value: string) {
+  return value.trim().length > 0;
+}
+
+function hasRenderableContent(resume: ResumeDocument, section: ResumeContentSection) {
+  switch (section) {
+    case "summary":
+      return hasText(resume.summary);
+    case "skills":
+      return resume.skillGroups.some((group) => hasText(group.name) || group.skills.some((skill) => hasText(skill)));
+    case "projects":
+      return resume.projects.some((item) => hasText(item.name) || hasText(item.description) || hasText(item.role));
+    case "experience":
+      return resume.experiences.some((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet)));
+    case "education":
+      return resume.education.some((item) => hasText(item.degree) || hasText(item.school));
+    case "certifications":
+      return resume.certifications.some((item) => hasText(item.name) || hasText(item.issuer));
+    case "awards":
+      return resume.awards.some((item) => hasText(item.title) || hasText(item.issuer));
+    case "activities":
+      return resume.activities.some((item) => hasText(item.name) || hasText(item.organization));
+  }
+}
+
+function sectionTitle(section: ResumeContentSection, resume: ResumeDocument) {
+  switch (section) {
+    case "summary":
+      return "Professional Summary";
+    case "skills":
+      return getSkillSectionLabel(resume.industryFocus);
+    case "projects":
+      return "Projects";
+    case "experience":
+      return "Work Experience";
+    case "education":
+      return "Education";
+    case "certifications":
+      return "Certifications";
+    case "awards":
+      return "Awards";
+    case "activities":
+      return "Activities";
+  }
+}
+
+function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }) {
+  return <h2 className={cn("mb-4 border-b pb-2 font-[var(--font-headline)] text-sm font-extrabold uppercase tracking-[0.24em]", theme.heading)}>{label}</h2>;
+}
+
+function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: PreviewTheme }) {
+  const contactItems = [
+    resume.personal.email,
+    resume.personal.phone,
+    resume.personal.location,
+    resume.personal.website,
+    resume.personal.linkedin,
+    resume.personal.github
+  ].filter(hasText);
+
   return (
-    <header className={inverse ? "border-b border-white/15 pb-8 text-white" : "border-b border-primary/20 pb-8 text-on-surface"}>
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex items-start gap-4">
-          {resume.avatarUrl ? (
-            <img src={resume.avatarUrl} alt={resume.personal.fullName} className="h-16 w-16 rounded-2xl object-cover" />
-          ) : null}
-          <div>
-            <h1 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight">{resume.personal.fullName || "Your name"}</h1>
-            <p className={inverse ? "mt-2 text-lg font-semibold text-primary-fixed" : "mt-2 text-lg font-semibold text-primary"}>
-              {resume.personal.title || "Professional title"}
-            </p>
-          </div>
-        </div>
-        <div className={inverse ? "space-y-1 text-right text-sm text-primary-fixed" : "space-y-1 text-right text-sm text-on-surface-variant"}>
-          <p>{resume.personal.email}</p>
-          <p>{resume.personal.phone}</p>
-          <p>{resume.personal.location}</p>
-          {resume.personal.website ? <p>{resume.personal.website}</p> : null}
-        </div>
-      </div>
+    <header className={cn("border-b pb-8", theme.divider)}>
+      <h1 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
+      <p className={cn("mt-2 text-lg font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
+      {contactItems.length > 0 ? <p className="mt-4 text-sm leading-7 text-on-surface-variant">{contactItems.join(" • ")}</p> : null}
     </header>
   );
 }
 
-function SectionTitle({ label, inverse = false }: { label: string; inverse?: boolean }) {
-  return (
-    <h2 className={inverse ? "mb-4 border-l-2 border-primary-fixed pl-3 font-[var(--font-headline)] text-xs font-extrabold uppercase tracking-[0.3em] text-primary-fixed" : "mb-4 border-l-2 border-primary pl-3 font-[var(--font-headline)] text-xs font-extrabold uppercase tracking-[0.3em] text-on-surface"}>
-      {label}
-    </h2>
-  );
-}
+function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; section: ResumeContentSection; theme: PreviewTheme }) {
+  if (!hasRenderableContent(resume, section)) {
+    return null;
+  }
 
-function ProfessionalDocument({ resume }: { resume: ResumeDocument }) {
-  return (
-    <div className="resume-paper print-friendly rounded-[1.5rem] bg-white p-10 shadow-float">
-      <ResumeHeader resume={resume} />
-      <div className="mt-8 grid gap-8 md:grid-cols-[1.5fr_0.9fr]">
-        <div className="space-y-8">
-          <section className="page-break-avoid">
-            <SectionTitle label="Professional Summary" />
-            <p className="text-sm leading-7 text-on-surface-variant">{resume.summary}</p>
-          </section>
-          <section className="page-break-avoid">
-            <SectionTitle label="Experience" />
-            <div className="space-y-6">
-              {resume.experiences.map((item) => (
-                <article key={item.id}>
-                  <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
-                    <span>{item.jobTitle || "Role"}</span>
-                    <span className="text-primary">{formatDateRange(item.startDate, item.endDate, item.current)}</span>
-                  </div>
-                  <p className="mt-1 text-sm italic text-on-surface-variant">{[item.employer, item.location].filter(Boolean).join(", ")}</p>
-                  {item.description ? <p className="mt-3 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
-                  {item.bullets.length > 0 ? (
-                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-7 text-on-surface-variant">
-                      {item.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          </section>
-          <section className="page-break-avoid">
-            <SectionTitle label="Projects" />
-            <div className="space-y-5">
-              {resume.projects.map((project) => (
-                <article key={project.id}>
-                  <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
-                    <span>{project.name || "Project"}</span>
-                    <span className="text-primary">{formatDateRange(project.startDate, project.endDate)}</span>
-                  </div>
-                  <p className="mt-1 text-sm italic text-on-surface-variant">{project.role}</p>
-                  <p className="mt-2 text-sm leading-7 text-on-surface-variant">{project.description}</p>
-                  {project.link ? <p className="mt-2 text-sm text-primary">{project.link}</p> : null}
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-        <div className="space-y-8">
-          <section className="page-break-avoid">
-            <SectionTitle label="Skills" />
-            <div className="flex flex-wrap gap-2 text-sm text-on-surface-variant">
-              {resume.skills.map((skill) => (
-                <span key={skill} className="rounded-full bg-primary-fixed px-3 py-1.5 font-medium text-on-primary-fixed-variant">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </section>
-          <section className="page-break-avoid">
-            <SectionTitle label="Education" />
-            <div className="space-y-4">
-              {resume.education.map((item) => (
-                <article key={item.id}>
-                  <p className="text-sm font-semibold text-on-surface">{item.degree || "Degree"}</p>
-                  <p className="text-sm text-on-surface-variant">{item.school}</p>
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">{formatDateRange(item.startDate, item.endDate)}</p>
-                  {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MinimalDocument({ resume }: { resume: ResumeDocument }) {
-  return (
-    <div className="resume-paper print-friendly rounded-[1.5rem] bg-white p-12 shadow-float">
-      <div className="border-b border-outline-variant/40 pb-8">
-        <h1 className="font-[var(--font-headline)] text-5xl font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
-        <p className="mt-3 text-base font-semibold uppercase tracking-[0.24em] text-primary">{resume.personal.title || "Professional title"}</p>
-        <p className="mt-4 text-sm leading-7 text-on-surface-variant">
-          {[resume.personal.email, resume.personal.phone, resume.personal.location, resume.personal.website].filter(Boolean).join(" • ")}
-        </p>
-      </div>
-      <section className="page-break-avoid mt-8">
-        <p className="text-sm leading-8 text-on-surface-variant">{resume.summary}</p>
+  if (section === "summary") {
+    return (
+      <section className="page-break-avoid">
+        <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
+        <p className="text-sm leading-7 text-on-surface-variant">{resume.summary}</p>
       </section>
-      <div className="mt-10 space-y-10">
-        <section className="page-break-avoid">
-          <div className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-primary">Experience</div>
-          <div className="space-y-6">
-            {resume.experiences.map((item) => (
-              <article key={item.id} className="rounded-2xl bg-surface-container-low p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="font-[var(--font-headline)] text-xl font-bold text-on-surface">{item.jobTitle || "Role"}</h2>
-                    <p className="text-sm text-on-surface-variant">{[item.employer, item.location].filter(Boolean).join(" • ")}</p>
-                  </div>
-                  <span className="text-sm font-semibold text-primary">{formatDateRange(item.startDate, item.endDate, item.current)}</span>
+    );
+  }
+
+  if (section === "skills") {
+    return (
+      <section className="page-break-avoid">
+        <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
+        <div className="space-y-3">
+          {resume.skillGroups
+            .filter((group) => hasText(group.name) || group.skills.some((skill) => hasText(skill)))
+            .map((group) => (
+              <div key={group.id} className={cn("rounded-2xl p-4", theme.card)}>
+                <p className="text-sm font-semibold text-on-surface">{group.name || "Skill Group"}</p>
+                <p className="mt-2 text-sm leading-7 text-on-surface-variant">{group.skills.filter(hasText).join(" • ")}</p>
+              </div>
+            ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (section === "projects") {
+    return (
+      <section className="page-break-avoid">
+        <SectionHeading label="Projects" theme={theme} />
+        <div className="space-y-5">
+          {resume.projects
+            .filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role))
+            .map((project) => (
+              <article key={project.id}>
+                <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
+                  <span>{project.name || "Project"}</span>
+                  <span className={theme.accentText}>{formatDateRange(project.startDate, project.endDate)}</span>
                 </div>
-                {item.description ? <p className="mt-3 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
-                {item.bullets.length > 0 ? (
-                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-7 text-on-surface-variant">
-                    {item.bullets.map((bullet) => (
+                {project.role ? <p className="mt-1 text-sm italic text-on-surface-variant">{project.role}</p> : null}
+                {project.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{project.description}</p> : null}
+                {project.link ? <p className={cn("mt-2 text-sm", theme.accentText)}>{project.link}</p> : null}
+              </article>
+            ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (section === "experience") {
+    return (
+      <section className="page-break-avoid">
+        <SectionHeading label="Work Experience" theme={theme} />
+        <div className="space-y-6">
+          {resume.experiences
+            .filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet)))
+            .map((item) => (
+              <article key={item.id}>
+                <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
+                  <span>{item.jobTitle || "Role"}</span>
+                  <span className={theme.accentText}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
+                </div>
+                <p className="mt-1 text-sm italic text-on-surface-variant">{[item.employer, item.location].filter(hasText).join(" • ")}</p>
+                {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
+                {item.bullets.filter(hasText).length > 0 ? (
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-7 text-on-surface-variant">
+                    {item.bullets.filter(hasText).map((bullet) => (
                       <li key={bullet}>{bullet}</li>
                     ))}
                   </ul>
                 ) : null}
               </article>
             ))}
-          </div>
-        </section>
-        <section className="page-break-avoid grid gap-8 md:grid-cols-2">
-          <div>
-            <div className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-primary">Education</div>
-            <div className="space-y-4">
-              {resume.education.map((item) => (
-                <article key={item.id}>
-                  <p className="font-semibold text-on-surface">{item.degree}</p>
-                  <p className="text-sm text-on-surface-variant">{item.school}</p>
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">{formatDateRange(item.startDate, item.endDate)}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-primary">Skills</div>
-            <div className="flex flex-wrap gap-2">
-              {resume.skills.map((skill) => (
-                <span key={skill} className="rounded-full bg-surface-container-low px-3 py-1.5 text-sm text-on-surface">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function CreativeDocument({ resume }: { resume: ResumeDocument }) {
-  return (
-    <div className="resume-paper print-friendly overflow-hidden rounded-[1.5rem] bg-white shadow-float">
-      <div className="grid min-h-[297mm] grid-cols-[0.92fr_1.58fr]">
-        <aside className="premium-gradient flex flex-col gap-8 p-8 text-on-primary">
-          {resume.avatarUrl ? <img src={resume.avatarUrl} alt={resume.personal.fullName} className="h-20 w-20 rounded-[1.5rem] object-cover" /> : null}
-          <div>
-            <h1 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight">{resume.personal.fullName || "Your name"}</h1>
-            <p className="mt-3 text-base font-semibold text-primary-fixed">{resume.personal.title || "Professional title"}</p>
-          </div>
-          <section>
-            <SectionTitle label="Contact" inverse />
-            <div className="space-y-2 text-sm text-primary-fixed">
-              <p>{resume.personal.email}</p>
-              <p>{resume.personal.phone}</p>
-              <p>{resume.personal.location}</p>
-              {resume.personal.website ? <p>{resume.personal.website}</p> : null}
-              {resume.personal.linkedin ? <p>{resume.personal.linkedin}</p> : null}
-              {resume.personal.github ? <p>{resume.personal.github}</p> : null}
-            </div>
-          </section>
-          <section>
-            <SectionTitle label="Skills" inverse />
-            <div className="flex flex-wrap gap-2 text-sm text-on-primary">
-              {resume.skills.map((skill) => (
-                <span key={skill} className="rounded-full bg-white/12 px-3 py-1.5">{skill}</span>
-              ))}
-            </div>
-          </section>
-          <section>
-            <SectionTitle label="Education" inverse />
-            <div className="space-y-4 text-sm text-primary-fixed">
-              {resume.education.map((item) => (
-                <article key={item.id}>
-                  <p className="font-semibold text-white">{item.degree}</p>
-                  <p>{item.school}</p>
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary-fixed">{formatDateRange(item.startDate, item.endDate)}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        </aside>
-        <div className="space-y-8 p-8">
-          <section className="page-break-avoid">
-            <SectionTitle label="Profile" />
-            <p className="text-sm leading-8 text-on-surface-variant">{resume.summary}</p>
-          </section>
-          <section className="page-break-avoid">
-            <SectionTitle label="Experience" />
-            <div className="space-y-6">
-              {resume.experiences.map((item) => (
-                <article key={item.id}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="font-[var(--font-headline)] text-xl font-bold text-on-surface">{item.jobTitle || "Role"}</h2>
-                      <p className="text-sm text-on-surface-variant">{[item.employer, item.location].filter(Boolean).join(" • ")}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-primary">{formatDateRange(item.startDate, item.endDate, item.current)}</span>
-                  </div>
-                  {item.description ? <p className="mt-3 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
-                  {item.bullets.length > 0 ? (
-                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-7 text-on-surface-variant">
-                      {item.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          </section>
-          <section className="page-break-avoid">
-            <SectionTitle label="Projects" />
-            <div className="space-y-5">
-              {resume.projects.map((project) => (
-                <article key={project.id}>
-                  <div className="flex items-start justify-between gap-4">
-                    <h2 className="font-[var(--font-headline)] text-xl font-bold text-on-surface">{project.name || "Project"}</h2>
-                    <span className="text-sm font-semibold text-primary">{formatDateRange(project.startDate, project.endDate)}</span>
-                  </div>
-                  <p className="mt-1 text-sm italic text-on-surface-variant">{project.role}</p>
-                  <p className="mt-2 text-sm leading-7 text-on-surface-variant">{project.description}</p>
-                </article>
-              ))}
-            </div>
-          </section>
         </div>
+      </section>
+    );
+  }
+
+  if (section === "education") {
+    return (
+      <section className="page-break-avoid">
+        <SectionHeading label="Education" theme={theme} />
+        <div className="space-y-4">
+          {resume.education
+            .filter((item) => hasText(item.degree) || hasText(item.school))
+            .map((item) => (
+              <article key={item.id}>
+                <p className="text-sm font-semibold text-on-surface">{item.degree || "Degree"}</p>
+                <p className="text-sm text-on-surface-variant">{[item.school, item.location].filter(hasText).join(" • ")}</p>
+                <p className={cn("mt-1 text-xs font-bold uppercase tracking-[0.22em]", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</p>
+                {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
+              </article>
+            ))}
+        </div>
+      </section>
+    );
+  }
+
+  const items =
+    section === "certifications"
+      ? resume.certifications.map((item) => ({ id: item.id, title: item.name, subtitle: item.issuer, date: item.date, description: item.description }))
+      : section === "awards"
+        ? resume.awards.map((item) => ({ id: item.id, title: item.title, subtitle: item.issuer, date: item.date, description: item.description }))
+        : resume.activities.map((item) => ({ id: item.id, title: item.name, subtitle: item.organization, date: item.date, description: item.description }));
+
+  return (
+    <section className="page-break-avoid">
+      <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
+      <div className="space-y-4">
+        {items
+          .filter((item) => hasText(item.title) || hasText(item.subtitle))
+          .map((item) => (
+            <article key={item.id}>
+              <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
+                <span>{item.title || "Item"}</span>
+                {item.date ? <span className={theme.accentText}>{item.date}</span> : null}
+              </div>
+              {item.subtitle ? <p className="mt-1 text-sm text-on-surface-variant">{item.subtitle}</p> : null}
+              {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
+            </article>
+          ))}
       </div>
-    </div>
+    </section>
   );
 }
 
 export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
-  if (resume.templateId === "minimal") {
-    return <MinimalDocument resume={resume} />;
-  }
+  const theme = previewThemes[resume.templateId];
+  const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(resume, section));
 
-  if (resume.templateId === "creative") {
-    return <CreativeDocument resume={resume} />;
-  }
-
-  return <ProfessionalDocument resume={resume} />;
+  return (
+    <div className={theme.shell}>
+      <ResumeHeader resume={resume} theme={theme} />
+      <div className="mt-8 space-y-8">
+        {orderedSections.map((section) => (
+          <ResumeSection key={section} resume={resume} section={section} theme={theme} />
+        ))}
+      </div>
+      {resume.templateId === "creative" ? (
+        <div className="mt-8 flex flex-wrap gap-2 border-t border-primary/15 pt-6">
+          {resume.skillGroups
+            .flatMap((group) => group.skills)
+            .filter(hasText)
+            .slice(0, 6)
+            .map((skill) => (
+              <span key={skill} className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", theme.tag)}>
+                {skill}
+              </span>
+            ))}
+        </div>
+      ) : null}
+    </div>
+  );
 }
-
