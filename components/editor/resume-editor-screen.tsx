@@ -372,10 +372,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                       <img
                         src={resume.avatarUrl}
                         alt={resume.personal.fullName}
-                        className={cn("object-cover shadow-sm", resume.avatarFrame === "portrait" ? "h-32 w-24 rounded-[1.25rem]" : "h-24 w-24 rounded-2xl")}
+                        className={cn("object-cover shadow-sm", resume.avatarFrame === "portrait" ? "h-40 w-28 rounded-[1.25rem]" : "h-32 w-32 rounded-2xl")}
                       />
                     ) : (
-                      <div className={cn("flex items-center justify-center bg-primary-fixed text-lg font-bold text-primary", resume.avatarFrame === "portrait" ? "h-32 w-24 rounded-[1.25rem]" : "h-24 w-24 rounded-2xl")}>
+                      <div className={cn("flex items-center justify-center bg-primary-fixed text-lg font-bold text-primary", resume.avatarFrame === "portrait" ? "h-40 w-28 rounded-[1.25rem]" : "h-32 w-32 rounded-2xl")}>
                         {resume.personal.fullName.slice(0, 1) || "A"}
                       </div>
                     )}
@@ -737,6 +737,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
+
 
 
 

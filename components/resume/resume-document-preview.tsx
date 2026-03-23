@@ -113,7 +113,7 @@ function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: Previe
             alt={resume.personal.fullName || "Profile photo"}
             className={cn(
               "shrink-0 object-cover border border-outline-variant/25",
-              resume.avatarFrame === "portrait" ? "h-[108px] w-[80px] rounded-[1rem]" : "h-[88px] w-[88px] rounded-[1rem]"
+              resume.avatarFrame === "portrait" ? "h-[148px] w-[108px] rounded-[1rem]" : "h-[118px] w-[118px] rounded-[1rem]"
             )}
           />
         ) : null}
@@ -280,6 +280,7 @@ export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
     </div>
   );
 }
+
 
 
 
