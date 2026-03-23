@@ -301,6 +301,7 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 .next/
+.next-dev/
 .turbo/
 .vercel/
 .env.local

@@ -52,7 +52,7 @@ Create-CV addresses that by combining a guided resume editor, multiple template 
 ## Stack
 - Bun for package management and scripts
 - Next.js App Router + React + TypeScript
-- Tailwind CSS with a custom design-token layer from `DESIGN.md`
+- Tailwind CSS with a custom design-token layer in the app styles
 - Firebase Auth and Firestore when env vars are provided
 - local demo auth/data mode when Firebase is not configured
 - Zustand for editor state synchronization
