@@ -39,6 +39,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
   }
 };
 
+const trailingSections = new Set<ResumeContentSection>(["education", "certifications", "awards", "activities"]);
+
 function hasText(value: string) {
   return value.trim().length > 0;
 }
@@ -62,6 +64,60 @@ function hasRenderableContent(resume: ResumeDocument, section: ResumeContentSect
     case "activities":
       return resume.activities.some((item) => hasText(item.name) || hasText(item.organization));
   }
+}
+
+function getSectionWeight(resume: ResumeDocument, section: ResumeContentSection) {
+  switch (section) {
+    case "summary":
+      return 2;
+    case "skills":
+      return 2 + resume.skillGroups.filter((group) => hasText(group.name) || group.skills.some((skill) => hasText(skill))).length;
+    case "projects":
+      return 1 + resume.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role)).length * 2.8;
+    case "experience":
+      return 1 + resume.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet))).length * 2.6;
+    case "education":
+      return 1.5 + resume.education.filter((item) => hasText(item.degree) || hasText(item.school)).length * 1.5;
+    case "certifications":
+      return 1 + resume.certifications.filter((item) => hasText(item.name) || hasText(item.issuer)).length * 1.1;
+    case "awards":
+      return 1 + resume.awards.filter((item) => hasText(item.title) || hasText(item.issuer)).length * 1.1;
+    case "activities":
+      return 1 + resume.activities.filter((item) => hasText(item.name) || hasText(item.organization)).length * 1.1;
+  }
+}
+
+function splitSectionsIntoPages(resume: ResumeDocument, sections: ResumeContentSection[]) {
+  const totalWeight = sections.reduce((sum, section) => sum + getSectionWeight(resume, section), 0);
+
+  if (totalWeight < 17) {
+    return [sections];
+  }
+
+  const trailing: ResumeContentSection[] = [];
+
+  for (let index = sections.length - 1; index >= 0; index -= 1) {
+    const section = sections[index];
+    if (!trailingSections.has(section)) {
+      break;
+    }
+
+    trailing.unshift(section);
+  }
+
+  if (trailing.length === 0) {
+    return [sections];
+  }
+
+  const trailingWeight = trailing.reduce((sum, section) => sum + getSectionWeight(resume, section), 0);
+  const leading = sections.slice(0, sections.length - trailing.length);
+  const leadingWeight = totalWeight - trailingWeight;
+
+  if (leading.length === 0 || trailingWeight < 2.4 || leadingWeight < 11) {
+    return [sections];
+  }
+
+  return [leading, trailing];
 }
 
 function sectionTitle(section: ResumeContentSection, resume: ResumeDocument) {
@@ -129,7 +185,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 
   if (section === "summary") {
     return (
-      <section className="page-break-avoid">
+      <section>
         <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
         <p className={cn("text-[11px] leading-[1.45]", theme.subtleText)}>{resume.summary}</p>
       </section>
@@ -138,7 +194,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 
   if (section === "skills") {
     return (
-      <section className="page-break-avoid">
+      <section>
         <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
         <div className="space-y-2">
           {resume.skillGroups
@@ -156,13 +212,13 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 
   if (section === "projects") {
     return (
-      <section className="page-break-avoid">
+      <section>
         <SectionHeading label="Projects" theme={theme} />
         <div className="space-y-3">
           {resume.projects
             .filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role))
             .map((project) => (
-              <article key={project.id}>
+              <article key={project.id} className="page-break-avoid">
                 <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                   <span>{project.name || "Project"}</span>
                   <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(project.startDate, project.endDate)}</span>
@@ -178,13 +234,13 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 
   if (section === "experience") {
     return (
-      <section className="page-break-avoid">
+      <section>
         <SectionHeading label="Work Experience" theme={theme} />
         <div className="space-y-3">
           {resume.experiences
             .filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet)))
             .map((item) => (
-              <article key={item.id}>
+              <article key={item.id} className="page-break-avoid">
                 <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                   <span>{item.jobTitle || "Role"}</span>
                   <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
@@ -207,13 +263,13 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 
   if (section === "education") {
     return (
-      <section className="page-break-avoid">
+      <section>
         <SectionHeading label="Education" theme={theme} />
         <div className="space-y-2">
           {resume.education
             .filter((item) => hasText(item.degree) || hasText(item.school))
             .map((item) => (
-              <article key={item.id}>
+              <article key={item.id} className="page-break-avoid">
                 <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                   <span>{item.degree || "Degree"}</span>
                   <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</span>
@@ -235,13 +291,13 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
         : resume.activities.map((item) => ({ id: item.id, title: item.name, subtitle: item.organization, date: item.date, description: item.description }));
 
   return (
-    <section className="page-break-avoid">
+    <section>
       <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
       <div className="space-y-2">
         {items
           .filter((item) => hasText(item.title) || hasText(item.subtitle))
           .map((item) => (
-            <article key={item.id}>
+            <article key={item.id} className="page-break-avoid">
               <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                 <span>{item.title || "Item"}</span>
                 {item.date ? <span className={cn("shrink-0", theme.accentText)}>{item.date}</span> : null}
@@ -258,30 +314,30 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
   const theme = previewThemes[resume.templateId];
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(resume, section));
+  const pages = splitSectionsIntoPages(resume, orderedSections);
   const allSkills = resume.skillGroups.flatMap((group) => group.skills).filter(hasText);
 
   return (
-    <div className={theme.shell}>
-      <ResumeHeader resume={resume} theme={theme} />
-      <div className="mt-4 space-y-4">
-        {orderedSections.map((section) => (
-          <ResumeSection key={section} resume={resume} section={section} theme={theme} />
-        ))}
-      </div>
-      {resume.templateId === "creative" && allSkills.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-1.5 border-t border-primary/15 pt-3">
-          {allSkills.slice(0, 6).map((skill) => (
-            <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>
-              {skill}
-            </span>
-          ))}
+    <div className="space-y-6 print:space-y-0">
+      {pages.map((pageSections, pageIndex) => (
+        <div key={`page-${pageIndex + 1}`} className={cn(theme.shell, pageIndex > 0 && "resume-page-break") }>
+          {pageIndex === 0 ? <ResumeHeader resume={resume} theme={theme} /> : null}
+          <div className={cn(pageIndex === 0 ? "mt-4 space-y-4" : "space-y-4")}>
+            {pageSections.map((section) => (
+              <ResumeSection key={`${pageIndex + 1}-${section}`} resume={resume} section={section} theme={theme} />
+            ))}
+          </div>
+          {resume.templateId === "creative" && pageIndex === pages.length - 1 && allSkills.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-1.5 border-t border-primary/15 pt-3">
+              {allSkills.slice(0, 6).map((skill) => (
+                <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>
+                  {skill}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      ))}
     </div>
   );
 }
-
-
-
-
-
