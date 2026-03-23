@@ -1,7 +1,6 @@
-﻿import Link from "next/link";
-
-import { buildResumeStartHref, type TemplatePreset } from "@/lib/template-library";
+import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
 import { cn } from "@/lib/utils";
+import type { TemplatePreset } from "@/lib/template-library";
 
 import { TemplatePreview } from "./template-preview";
 
@@ -31,12 +30,12 @@ export function TemplateCard({ template, featured = false }: { template: Templat
           </h3>
           <p className="mt-2 max-w-xl text-sm leading-6 text-on-surface-variant">{featured ? template.featuredCopy : template.description}</p>
         </div>
-        <Link
-          href={buildResumeStartHref(template.id)}
+        <MarketingResumeLink
+          templateId={template.id}
           className="premium-gradient shrink-0 rounded-2xl px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95"
         >
           Use template
-        </Link>
+        </MarketingResumeLink>
       </div>
     </div>
   );

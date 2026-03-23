@@ -5,6 +5,7 @@ import type { PropsWithChildren } from "react";
 
 import {
   getResolvedAuthMode,
+  initializeAuthPersistence,
   loginWithEmail,
   loginWithGithub,
   loginWithGoogle,
@@ -33,12 +34,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const authMode = getResolvedAuthMode();
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthState((nextUser) => {
-      setUser(nextUser);
-      setLoading(false);
-    });
+    let active = true;
+    let unsubscribe: () => void = () => {};
 
-    return unsubscribe;
+    const startSubscription = () => {
+      if (!active) {
+        return;
+      }
+
+      unsubscribe = subscribeToAuthState((nextUser) => {
+        setUser(nextUser);
+        setLoading(false);
+      });
+    };
+
+    initializeAuthPersistence().catch(() => undefined).finally(startSubscription);
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(

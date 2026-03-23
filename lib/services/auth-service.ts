@@ -3,8 +3,10 @@
 import {
   GithubAuthProvider,
   GoogleAuthProvider,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -31,6 +33,7 @@ type AuthPayload = {
 };
 
 const demoListeners = new Set<(user: AppUser | null) => void>();
+let firebasePersistencePromise: Promise<void> | null = null;
 
 function getAuthMode(): AuthMode {
   return firebaseAuth ? "firebase" : "demo";
@@ -129,6 +132,21 @@ export function getResolvedAuthMode() {
   return getAuthMode();
 }
 
+export function initializeAuthPersistence() {
+  if (!firebaseAuth || typeof window === "undefined") {
+    return Promise.resolve();
+  }
+
+  if (!firebasePersistencePromise) {
+    firebasePersistencePromise = setPersistence(firebaseAuth, browserLocalPersistence).catch((error) => {
+      firebasePersistencePromise = null;
+      throw error;
+    });
+  }
+
+  return firebasePersistencePromise;
+}
+
 export function subscribeToAuthState(listener: (user: AppUser | null) => void) {
   if (firebaseAuth) {
     return onAuthStateChanged(firebaseAuth, (user) => {
@@ -141,6 +159,7 @@ export function subscribeToAuthState(listener: (user: AppUser | null) => void) {
 
 export async function registerWithEmail(payload: AuthPayload) {
   if (firebaseAuth) {
+    await initializeAuthPersistence();
     const credential = await createUserWithEmailAndPassword(firebaseAuth, payload.email, payload.password);
 
     if (payload.displayName) {
@@ -174,6 +193,7 @@ export async function registerWithEmail(payload: AuthPayload) {
 
 export async function loginWithEmail(payload: AuthPayload) {
   if (firebaseAuth) {
+    await initializeAuthPersistence();
     const credential = await signInWithEmailAndPassword(firebaseAuth, payload.email, payload.password);
     return mapFirebaseUser(credential.user);
   }
@@ -199,6 +219,7 @@ export async function loginWithEmail(payload: AuthPayload) {
 
 export async function loginWithGoogle() {
   if (firebaseAuth) {
+    await initializeAuthPersistence();
     const credential = await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
     return mapFirebaseUser(credential.user);
   }
@@ -211,6 +232,7 @@ export async function loginWithGoogle() {
 
 export async function loginWithGithub() {
   if (firebaseAuth) {
+    await initializeAuthPersistence();
     const credential = await signInWithPopup(firebaseAuth, new GithubAuthProvider());
     return mapFirebaseUser(credential.user);
   }

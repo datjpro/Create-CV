@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { buildResumeStartHref } from "@/lib/template-library";
+import { MarketingAccountLink, MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -19,11 +19,11 @@ export function MarketingHeader() {
     <header className="sticky top-0 z-50 border-b border-outline-variant/20 glass-panel">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
         <Link href="/" className="font-[var(--font-headline)] text-xl font-extrabold tracking-tight text-primary">
-          Architect CV
+          CV-Tech
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
           {links.map((link) => {
-            const active = pathname === "/" ? link.href === "/templates" ? false : false : pathname.startsWith(link.href.replace("/#pricing", ""));
+            const active = pathname === "/" ? false : pathname.startsWith(link.href.replace("/#pricing", ""));
             return (
               <Link
                 key={link.href}
@@ -39,14 +39,21 @@ export function MarketingHeader() {
           })}
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="rounded-xl px-4 py-2 font-semibold text-on-surface-variant transition hover:bg-surface-container-low">
-            Login
-          </Link>
-          <Link href={buildResumeStartHref("professional")} className="premium-gradient rounded-xl px-5 py-2.5 font-bold text-on-primary transition hover:opacity-95">
+          <MarketingAccountLink
+            className="rounded-xl px-4 py-2 font-semibold text-on-surface-variant transition hover:bg-surface-container-low"
+            guestLabel="Login"
+            authenticatedLabel="Dashboard"
+          />
+          <MarketingResumeLink
+            templateId="professional"
+            className="premium-gradient rounded-xl px-5 py-2.5 font-bold text-on-primary transition hover:opacity-95"
+          >
             Create CV
-          </Link>
+          </MarketingResumeLink>
         </div>
       </div>
     </header>
   );
 }
+
+

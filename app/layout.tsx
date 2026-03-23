@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 
 import "./globals.css";
@@ -15,7 +15,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Architect CV",
+  title: "CV-Tech",
   description: "Create modern ATS-ready resumes with live preview and multi-template PDF export."
 };
 
@@ -32,3 +32,4 @@ export default function RootLayout({
     </html>
   );
 }
+

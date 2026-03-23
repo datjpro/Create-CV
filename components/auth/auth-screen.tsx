@@ -77,7 +77,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     <main className="flex min-h-screen flex-col bg-surface">
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 sm:px-8">
         <Link href="/" className="font-[var(--font-headline)] text-xl font-extrabold tracking-tight text-primary">
-          Architect CV
+          CV-Tech
         </Link>
       </header>
       <section className="flex flex-1 items-center justify-center px-4 py-12">
@@ -191,3 +191,5 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     </main>
   );
 }
+
+

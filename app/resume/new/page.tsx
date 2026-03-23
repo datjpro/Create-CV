@@ -1,12 +1,18 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { PrivateRouteShell } from "@/components/auth/private-route-shell";
 import { createResume } from "@/lib/services/resume-service";
 import type { TemplateId } from "@/lib/types";
+
+const RESUME_CREATION_INTENT_KEY = "createCvResumeCreationIntent";
+
+type ResumeCreationHistoryState = {
+  [RESUME_CREATION_INTENT_KEY]?: string;
+};
 
 function readTemplateId(): TemplateId {
   if (typeof window === "undefined") {
@@ -17,27 +23,60 @@ function readTemplateId(): TemplateId {
   return value === "minimal" || value === "creative" || value === "professional" ? value : "professional";
 }
 
+function readResumeCreationIntent() {
+  if (typeof window === "undefined") {
+    return "resume-intent-server";
+  }
+
+  const historyState = ((window.history.state ?? {}) as ResumeCreationHistoryState) ?? {};
+  const existingIntent = historyState[RESUME_CREATION_INTENT_KEY];
+
+  if (existingIntent) {
+    return existingIntent;
+  }
+
+  const nextIntent = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `resume-intent-${Date.now()}`;
+  window.history.replaceState(
+    {
+      ...historyState,
+      [RESUME_CREATION_INTENT_KEY]: nextIntent
+    },
+    ""
+  );
+
+  return nextIntent;
+}
+
+function buildResumeId(userId: string, intent: string) {
+  return `resume-${userId}-${intent}`;
+}
+
 function CreateResumeFlow() {
   const router = useRouter();
   const { user } = useAuth();
   const [error, setError] = useState("");
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
-      if (!user) {
+      if (!user || hasStartedRef.current) {
         return;
       }
 
+      hasStartedRef.current = true;
+
       try {
-        const resume = await createResume(user.uid, readTemplateId());
+        const resumeIntent = readResumeCreationIntent();
+        const resume = await createResume(user.uid, readTemplateId(), buildResumeId(user.uid, resumeIntent));
         if (!cancelled) {
           router.replace(`/resume/${resume.id}/edit`);
         }
       } catch (nextError) {
         if (!cancelled) {
           setError(nextError instanceof Error ? nextError.message : "Unable to create resume.");
+          hasStartedRef.current = false;
         }
       }
     }

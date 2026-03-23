@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   collection,
@@ -105,8 +105,8 @@ export async function getResume(userId: string, resumeId: string) {
   return getDemoResumes().find((resume) => resume.userId === userId && resume.id === resumeId) ?? null;
 }
 
-export async function createResume(userId: string, templateId: TemplateId = "professional") {
-  const resume = buildDefaultResume(userId, templateId);
+export async function createResume(userId: string, templateId: TemplateId = "professional", resumeId?: string) {
+  const resume = buildDefaultResume(userId, templateId, resumeId);
 
   if (firebaseDb) {
     const reference = doc(firebaseDb, "users", userId, "resumes", resume.id);
@@ -115,7 +115,14 @@ export async function createResume(userId: string, templateId: TemplateId = "pro
   }
 
   const resumes = getDemoResumes();
-  resumes.push(resume);
+  const existingIndex = resumes.findIndex((entry) => entry.userId === userId && entry.id === resume.id);
+
+  if (existingIndex === -1) {
+    resumes.push(resume);
+  } else {
+    resumes[existingIndex] = resume;
+  }
+
   setDemoResumes(resumes);
   return resume;
 }
@@ -185,4 +192,3 @@ export async function uploadAvatar(userId: string, resumeId: string, file: File)
     reader.readAsDataURL(file);
   });
 }
-

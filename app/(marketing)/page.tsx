@@ -1,8 +1,9 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
+import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
 import { TemplateCard } from "@/components/marketing/template-card";
 import { TemplatePreview } from "@/components/marketing/template-preview";
-import { buildResumeStartHref, templateLibrary } from "@/lib/template-library";
+import { templateLibrary } from "@/lib/template-library";
 
 export default function HomePage() {
   return (
@@ -20,9 +21,12 @@ export default function HomePage() {
               Fast resume creation, editorial layouts and multi-template PDF export that stays text-selectable for recruiters and ATS systems.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link href={buildResumeStartHref("professional")} className="premium-gradient rounded-2xl px-8 py-4 text-center text-lg font-bold text-on-primary shadow-float transition hover:-translate-y-0.5">
+              <MarketingResumeLink
+                templateId="professional"
+                className="premium-gradient rounded-2xl px-8 py-4 text-center text-lg font-bold text-on-primary shadow-float transition hover:-translate-y-0.5"
+              >
                 Create CV for free
-              </Link>
+              </MarketingResumeLink>
               <Link href="/templates" className="rounded-2xl bg-surface-container-high px-8 py-4 text-center text-lg font-bold text-on-surface transition hover:bg-surface-container-highest">
                 View templates
               </Link>
@@ -104,9 +108,12 @@ export default function HomePage() {
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant">
             Choose a template, fill your details once, and export a polished CV whenever you need it.
           </p>
-          <Link href={buildResumeStartHref("professional")} className="premium-gradient mt-10 inline-flex rounded-2xl px-10 py-5 text-lg font-bold text-on-primary shadow-float transition hover:-translate-y-0.5">
+          <MarketingResumeLink
+            templateId="professional"
+            className="premium-gradient mt-10 inline-flex rounded-2xl px-10 py-5 text-lg font-bold text-on-primary shadow-float transition hover:-translate-y-0.5"
+          >
             Create CV now
-          </Link>
+          </MarketingResumeLink>
         </div>
       </section>
     </main>

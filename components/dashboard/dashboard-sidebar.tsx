@@ -29,7 +29,7 @@ export function DashboardSidebar() {
   return (
     <aside className="hidden w-72 shrink-0 flex-col border-r border-outline-variant/20 bg-surface-container-low p-5 lg:flex">
       <Link href="/" className="px-3 py-4 font-[var(--font-headline)] text-xl font-extrabold tracking-tight text-primary">
-        Architect CV
+        CV-Tech
       </Link>
       <div className="mt-4 rounded-[1.5rem] bg-surface-container-lowest p-4 shadow-sm">
         <div className="text-xs font-bold uppercase tracking-[0.26em] text-primary">Workspace</div>
@@ -66,3 +66,5 @@ export function DashboardSidebar() {
     </aside>
   );
 }
+
+

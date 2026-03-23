@@ -1,4 +1,4 @@
-﻿import type { TemplateId } from "@/lib/types";
+import type { TemplateId } from "@/lib/types";
 
 export type TemplatePreset = {
   id: TemplateId;
@@ -39,6 +39,10 @@ export const templateLibrary: TemplatePreset[] = [
   }
 ];
 
+export function buildResumeCreateHref(templateId: TemplateId) {
+  return `/resume/new?template=${templateId}`;
+}
+
 export function buildResumeStartHref(templateId: TemplateId) {
-  return `/login?redirect=${encodeURIComponent(`/resume/new?template=${templateId}`)}`;
+  return `/login?redirect=${encodeURIComponent(buildResumeCreateHref(templateId))}`;
 }

@@ -1,7 +1,7 @@
-﻿import { TemplateCard } from "@/components/marketing/template-card";
+import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
+import { TemplateCard } from "@/components/marketing/template-card";
 import { TemplatePreview } from "@/components/marketing/template-preview";
-import { buildResumeStartHref, templateLibrary } from "@/lib/template-library";
-import Link from "next/link";
+import { templateLibrary } from "@/lib/template-library";
 
 export default function TemplatesPage() {
   const [featured, ...rest] = templateLibrary;
@@ -26,9 +26,9 @@ export default function TemplatesPage() {
             <span className="rounded-full bg-surface-container-high px-5 py-2.5 text-sm font-semibold text-on-surface-variant">Minimal</span>
             <span className="rounded-full bg-surface-container-high px-5 py-2.5 text-sm font-semibold text-on-surface-variant">Creative</span>
           </div>
-          <Link href={buildResumeStartHref("professional")} className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest">
+          <MarketingResumeLink templateId="professional" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest">
             Start from recommended template
-          </Link>
+          </MarketingResumeLink>
         </section>
 
         <section className="grid gap-8 lg:grid-cols-3">
@@ -48,9 +48,9 @@ export default function TemplatesPage() {
               <p className="mt-5 max-w-xl text-lg leading-8 text-primary-fixed">
                 Start with The Executive and switch to Minimal or Modernist later. The data model stays the same across all templates.
               </p>
-              <Link href={buildResumeStartHref("professional")} className="mt-8 inline-flex rounded-2xl bg-white px-6 py-3 font-bold text-primary transition hover:bg-primary-fixed">
+              <MarketingResumeLink templateId="professional" className="mt-8 inline-flex rounded-2xl bg-white px-6 py-3 font-bold text-primary transition hover:bg-primary-fixed">
                 Use The Executive
-              </Link>
+              </MarketingResumeLink>
             </div>
             <div className="rounded-[2rem] bg-white/10 p-6 backdrop-blur-md">
               <div className="aspect-[3/4] overflow-hidden rounded-[1.5rem] bg-white p-5 shadow-float">

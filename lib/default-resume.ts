@@ -4,11 +4,11 @@ function createId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function buildDefaultResume(userId: string, templateId: TemplateId = "professional"): ResumeDocument {
+export function buildDefaultResume(userId: string, templateId: TemplateId = "professional", resumeId?: string): ResumeDocument {
   const now = Date.now();
 
   return {
-    id: createId("resume"),
+    id: resumeId ?? createId("resume"),
     userId,
     title: "Untitled Resume",
     status: "draft",
