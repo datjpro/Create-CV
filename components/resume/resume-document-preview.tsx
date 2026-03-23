@@ -1,6 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
 import type { ResumeContentSection, ResumeDocument, TemplateId } from "@/lib/types";
+
+type InlineItem = {
+  label: string;
+  href?: string;
+  external?: boolean;
+};
 import { cn, formatDateRange } from "@/lib/utils";
 
 type PreviewTheme = {
@@ -41,6 +47,67 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
 
 function hasText(value: string) {
   return value.trim().length > 0;
+}
+
+function formatLinkLabel(value: string) {
+  return value.trim().replace(/^(https?:\/\/|mailto:|tel:)/i, "").replace(/\/$/, "");
+}
+
+function normalizeExternalHref(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  return /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function normalizePhoneHref(value: string) {
+  const sanitized = value.trim().replace(/[^\d+]/g, "");
+  return sanitized ? `tel:${sanitized}` : "";
+}
+
+function renderInlineItems(items: InlineItem[], className: string, theme: PreviewTheme) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <p className={cn(className, theme.subtleText)}>
+      {items.map((item, index) => (
+        <span key={`${item.label}-${index}`}>
+          {index > 0 ? " | " : null}
+          {item.href ? (
+            <a
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noreferrer" : undefined}
+              className="underline-offset-2 transition hover:underline"
+            >
+              {item.label}
+            </a>
+          ) : (
+            item.label
+          )}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+function compactInlineItems(items: Array<InlineItem | null | false>): InlineItem[] {
+  return items.filter((item): item is InlineItem => Boolean(item));
+}
+
+function buildContactItems(resume: ResumeDocument): InlineItem[] {
+  return compactInlineItems([
+    resume.personal.email ? { label: resume.personal.email.trim(), href: `mailto:${resume.personal.email.trim()}` } : null,
+    resume.personal.phone ? { label: resume.personal.phone.trim(), href: normalizePhoneHref(resume.personal.phone) } : null,
+    resume.personal.location ? { label: resume.personal.location.trim() } : null,
+    resume.personal.website ? { label: formatLinkLabel(resume.personal.website), href: normalizeExternalHref(resume.personal.website), external: true } : null,
+    resume.personal.linkedin ? { label: formatLinkLabel(resume.personal.linkedin), href: normalizeExternalHref(resume.personal.linkedin), external: true } : null,
+    resume.personal.github ? { label: formatLinkLabel(resume.personal.github), href: normalizeExternalHref(resume.personal.github), external: true } : null
+  ]);
 }
 
 function hasRenderableContent(resume: ResumeDocument, section: ResumeContentSection) {
@@ -90,20 +157,13 @@ function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }
 }
 
 function ResumeIdentity({ resume, theme }: { resume: ResumeDocument; theme: PreviewTheme }) {
-  const contactItems = [
-    resume.personal.email,
-    resume.personal.phone,
-    resume.personal.location,
-    resume.personal.website,
-    resume.personal.linkedin,
-    resume.personal.github
-  ].filter(hasText);
+  const contactItems = buildContactItems(resume);
 
   return (
     <div className="min-w-0">
       <h1 className="font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
       <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
-      {contactItems.length > 0 ? <p className={cn("mt-1.5 text-[10.5px] leading-[1.45]", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
+      {renderInlineItems(contactItems, "mt-1.5 text-[10.5px] leading-[1.45]", theme)}
     </div>
   );
 }
@@ -195,7 +255,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
                   <span>{project.name || "Project"}</span>
                   <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(project.startDate, project.endDate)}</span>
                 </div>
-                <p className={cn("mt-0.5 text-[11px] italic", theme.subtleText)}>{[project.role, project.link].filter(hasText).join(" | ")}</p>
+                {renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-0.5 text-[11px] italic", theme)}
                 {project.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{project.description}</p> : null}
               </article>
             ))}
