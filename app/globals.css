@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -99,9 +99,14 @@ button {
   min-height: 297mm;
 }
 
+.resume-paper.resume-density-compact {
+  font-size: 10.5pt;
+  line-height: 1.35;
+}
+
 @page {
   size: A4;
-  margin: 12mm;
+  margin: 8mm;
 }
 
 @media print {
@@ -132,4 +137,10 @@ button {
     width: auto !important;
     min-height: auto !important;
   }
+
+  .resume-paper.resume-density-compact {
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+  }
 }
+

@@ -8,33 +8,33 @@ type PreviewTheme = {
   heading: string;
   accentText: string;
   tag: string;
-  card: string;
+  subtleText: string;
 };
 
 const previewThemes: Record<TemplateId, PreviewTheme> = {
   professional: {
-    shell: "resume-paper print-friendly rounded-[1.5rem] bg-white p-10 shadow-float",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] bg-white px-7 py-6 shadow-float",
     divider: "border-primary/20",
-    heading: "text-primary border-primary/60",
+    heading: "text-primary border-primary/55",
     accentText: "text-primary",
-    tag: "bg-primary-fixed text-on-primary-fixed-variant",
-    card: "bg-surface-container-low"
+    tag: "bg-primary/10 text-on-surface",
+    subtleText: "text-on-surface-variant"
   },
   minimal: {
-    shell: "resume-paper print-friendly rounded-[1.5rem] border border-outline-variant/40 bg-white p-12 shadow-float",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-outline-variant/35 bg-white px-7 py-6 shadow-float",
     divider: "border-outline-variant/40",
     heading: "text-on-surface border-outline-variant/60",
     accentText: "text-on-surface-variant",
     tag: "bg-surface-container-low text-on-surface",
-    card: "bg-surface-container-low"
+    subtleText: "text-on-surface-variant"
   },
   creative: {
-    shell: "resume-paper print-friendly rounded-[1.5rem] border border-primary/15 bg-white p-10 shadow-float",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-primary/15 bg-white px-7 py-6 shadow-float",
     divider: "border-primary/25",
-    heading: "text-primary border-primary",
+    heading: "text-primary border-primary/75",
     accentText: "text-primary",
     tag: "bg-primary/10 text-primary",
-    card: "bg-primary/5"
+    subtleText: "text-on-surface-variant"
   }
 };
 
@@ -85,7 +85,7 @@ function sectionTitle(section: ResumeContentSection, resume: ResumeDocument) {
 }
 
 function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }) {
-  return <h2 className={cn("mb-4 border-b pb-2 font-[var(--font-headline)] text-sm font-extrabold uppercase tracking-[0.24em]", theme.heading)}>{label}</h2>;
+  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold uppercase tracking-[0.22em]", theme.heading)}>{label}</h2>;
 }
 
 function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: PreviewTheme }) {
@@ -99,10 +99,10 @@ function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: Previe
   ].filter(hasText);
 
   return (
-    <header className={cn("border-b pb-8", theme.divider)}>
-      <h1 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
-      <p className={cn("mt-2 text-lg font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
-      {contactItems.length > 0 ? <p className="mt-4 text-sm leading-7 text-on-surface-variant">{contactItems.join(" • ")}</p> : null}
+    <header className={cn("border-b pb-4", theme.divider)}>
+      <h1 className="font-[var(--font-headline)] text-[28px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
+      <p className={cn("mt-1 text-sm font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
+      {contactItems.length > 0 ? <p className={cn("mt-2 text-[11px] leading-5", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
     </header>
   );
 }
@@ -116,7 +116,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section className="page-break-avoid">
         <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
-        <p className="text-sm leading-7 text-on-surface-variant">{resume.summary}</p>
+        <p className={cn("text-[11px] leading-[1.45]", theme.subtleText)}>{resume.summary}</p>
       </section>
     );
   }
@@ -125,13 +125,13 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section className="page-break-avoid">
         <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
-        <div className="space-y-3">
+        <div className="space-y-2">
           {resume.skillGroups
             .filter((group) => hasText(group.name) || group.skills.some((skill) => hasText(skill)))
             .map((group) => (
-              <div key={group.id} className={cn("rounded-2xl p-4", theme.card)}>
-                <p className="text-sm font-semibold text-on-surface">{group.name || "Skill Group"}</p>
-                <p className="mt-2 text-sm leading-7 text-on-surface-variant">{group.skills.filter(hasText).join(" • ")}</p>
+              <div key={group.id} className="text-[11px] leading-[1.4] text-on-surface">
+                <span className="font-semibold">{group.name || "Skill Group"}: </span>
+                <span className={theme.subtleText}>{group.skills.filter(hasText).join(" | ")}</span>
               </div>
             ))}
         </div>
@@ -143,18 +143,17 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section className="page-break-avoid">
         <SectionHeading label="Projects" theme={theme} />
-        <div className="space-y-5">
+        <div className="space-y-3">
           {resume.projects
             .filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role))
             .map((project) => (
               <article key={project.id}>
-                <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
+                <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                   <span>{project.name || "Project"}</span>
-                  <span className={theme.accentText}>{formatDateRange(project.startDate, project.endDate)}</span>
+                  <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(project.startDate, project.endDate)}</span>
                 </div>
-                {project.role ? <p className="mt-1 text-sm italic text-on-surface-variant">{project.role}</p> : null}
-                {project.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{project.description}</p> : null}
-                {project.link ? <p className={cn("mt-2 text-sm", theme.accentText)}>{project.link}</p> : null}
+                <p className={cn("mt-0.5 text-[11px] italic", theme.subtleText)}>{[project.role, project.link].filter(hasText).join(" | ")}</p>
+                {project.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{project.description}</p> : null}
               </article>
             ))}
         </div>
@@ -166,19 +165,19 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section className="page-break-avoid">
         <SectionHeading label="Work Experience" theme={theme} />
-        <div className="space-y-6">
+        <div className="space-y-3">
           {resume.experiences
             .filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet)))
             .map((item) => (
               <article key={item.id}>
-                <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
+                <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                   <span>{item.jobTitle || "Role"}</span>
-                  <span className={theme.accentText}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
+                  <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
                 </div>
-                <p className="mt-1 text-sm italic text-on-surface-variant">{[item.employer, item.location].filter(hasText).join(" • ")}</p>
-                {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
+                <p className={cn("mt-0.5 text-[11px] italic", theme.subtleText)}>{[item.employer, item.location].filter(hasText).join(" | ")}</p>
+                {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{item.description}</p> : null}
                 {item.bullets.filter(hasText).length > 0 ? (
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-7 text-on-surface-variant">
+                  <ul className={cn("mt-1 list-disc space-y-0.5 pl-4 text-[11px] leading-[1.4]", theme.subtleText)}>
                     {item.bullets.filter(hasText).map((bullet) => (
                       <li key={bullet}>{bullet}</li>
                     ))}
@@ -195,15 +194,17 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section className="page-break-avoid">
         <SectionHeading label="Education" theme={theme} />
-        <div className="space-y-4">
+        <div className="space-y-2">
           {resume.education
             .filter((item) => hasText(item.degree) || hasText(item.school))
             .map((item) => (
               <article key={item.id}>
-                <p className="text-sm font-semibold text-on-surface">{item.degree || "Degree"}</p>
-                <p className="text-sm text-on-surface-variant">{[item.school, item.location].filter(hasText).join(" • ")}</p>
-                <p className={cn("mt-1 text-xs font-bold uppercase tracking-[0.22em]", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</p>
-                {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
+                <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
+                  <span>{item.degree || "Degree"}</span>
+                  <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</span>
+                </div>
+                <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{[item.school, item.location].filter(hasText).join(" | ")}</p>
+                {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.4]", theme.subtleText)}>{item.description}</p> : null}
               </article>
             ))}
         </div>
@@ -221,17 +222,17 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
   return (
     <section className="page-break-avoid">
       <SectionHeading label={sectionTitle(section, resume)} theme={theme} />
-      <div className="space-y-4">
+      <div className="space-y-2">
         {items
           .filter((item) => hasText(item.title) || hasText(item.subtitle))
           .map((item) => (
             <article key={item.id}>
-              <div className="flex items-start justify-between gap-4 text-sm font-semibold text-on-surface">
+              <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
                 <span>{item.title || "Item"}</span>
-                {item.date ? <span className={theme.accentText}>{item.date}</span> : null}
+                {item.date ? <span className={cn("shrink-0", theme.accentText)}>{item.date}</span> : null}
               </div>
-              {item.subtitle ? <p className="mt-1 text-sm text-on-surface-variant">{item.subtitle}</p> : null}
-              {item.description ? <p className="mt-2 text-sm leading-7 text-on-surface-variant">{item.description}</p> : null}
+              {item.subtitle ? <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{item.subtitle}</p> : null}
+              {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.4]", theme.subtleText)}>{item.description}</p> : null}
             </article>
           ))}
       </div>
@@ -242,28 +243,26 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
   const theme = previewThemes[resume.templateId];
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(resume, section));
+  const allSkills = resume.skillGroups.flatMap((group) => group.skills).filter(hasText);
 
   return (
     <div className={theme.shell}>
       <ResumeHeader resume={resume} theme={theme} />
-      <div className="mt-8 space-y-8">
+      <div className="mt-4 space-y-4">
         {orderedSections.map((section) => (
           <ResumeSection key={section} resume={resume} section={section} theme={theme} />
         ))}
       </div>
-      {resume.templateId === "creative" ? (
-        <div className="mt-8 flex flex-wrap gap-2 border-t border-primary/15 pt-6">
-          {resume.skillGroups
-            .flatMap((group) => group.skills)
-            .filter(hasText)
-            .slice(0, 6)
-            .map((skill) => (
-              <span key={skill} className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", theme.tag)}>
-                {skill}
-              </span>
-            ))}
+      {resume.templateId === "creative" && allSkills.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-1.5 border-t border-primary/15 pt-3">
+          {allSkills.slice(0, 6).map((skill) => (
+            <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>
+              {skill}
+            </span>
+          ))}
         </div>
       ) : null}
     </div>
   );
 }
+

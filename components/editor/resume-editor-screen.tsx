@@ -186,7 +186,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: resume?.title ? `${resume.title.replace(/\s+/g, "-").toLowerCase()}` : "resume",
-    pageStyle: "@page { size: A4; margin: 12mm; }"
+    pageStyle: "@page { size: A4; margin: 8mm; }"
   });
 
   async function handleSave() {
@@ -662,3 +662,4 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
+
