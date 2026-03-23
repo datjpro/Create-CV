@@ -89,7 +89,7 @@ function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }
   return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold uppercase tracking-[0.22em]", theme.heading)}>{label}</h2>;
 }
 
-function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: PreviewTheme }) {
+function ResumeIdentity({ resume, theme }: { resume: ResumeDocument; theme: PreviewTheme }) {
   const contactItems = [
     resume.personal.email,
     resume.personal.phone,
@@ -100,24 +100,52 @@ function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: Previe
   ].filter(hasText);
 
   return (
-    <header className={cn("border-b pb-3", theme.divider)}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h1 className="font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
-          <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
-          {contactItems.length > 0 ? <p className={cn("mt-1.5 text-[10.5px] leading-[1.45]", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
+    <div className="min-w-0">
+      <h1 className="font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
+      <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
+      {contactItems.length > 0 ? <p className={cn("mt-1.5 text-[10.5px] leading-[1.45]", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
+    </div>
+  );
+}
+
+function ResumeHeader({ resume, theme, showSummary }: { resume: ResumeDocument; theme: PreviewTheme; showSummary: boolean }) {
+  const photo = resume.avatarUrl ? (
+    <img
+      src={resume.avatarUrl}
+      alt={resume.personal.fullName || "Profile photo"}
+      className={cn(
+        "shrink-0 object-cover border border-outline-variant/25",
+        resume.avatarFrame === "portrait" ? "h-[198px] w-[144px] rounded-[1rem]" : "h-[144px] w-[144px] rounded-[1rem]"
+      )}
+    />
+  ) : null;
+
+  if (photo) {
+    return (
+      <header className={cn("border-b pb-3", theme.divider)}>
+        <div className="grid items-start gap-x-4 gap-y-2 [grid-template-columns:minmax(0,1fr)_144px]">
+          <ResumeIdentity resume={resume} theme={theme} />
+          <div className="row-span-2 flex justify-end">{photo}</div>
+          {showSummary ? (
+            <section className="min-w-0">
+              <SectionHeading label="Professional Summary" theme={theme} />
+              <p className={cn("pr-1 text-[11px] leading-[1.42]", theme.subtleText)}>{resume.summary}</p>
+            </section>
+          ) : null}
         </div>
-        {resume.avatarUrl ? (
-          <img
-            src={resume.avatarUrl}
-            alt={resume.personal.fullName || "Profile photo"}
-            className={cn(
-              "shrink-0 object-cover border border-outline-variant/25",
-              resume.avatarFrame === "portrait" ? "h-[164px] w-[120px] rounded-[1rem]" : "h-[128px] w-[128px] rounded-[1rem]"
-            )}
-          />
-        ) : null}
-      </div>
+      </header>
+    );
+  }
+
+  return (
+    <header className={cn("border-b pb-3", theme.divider)}>
+      <ResumeIdentity resume={resume} theme={theme} />
+      {showSummary ? (
+        <section className="mt-3 min-w-0">
+          <SectionHeading label="Professional Summary" theme={theme} />
+          <p className={cn("text-[11px] leading-[1.42]", theme.subtleText)}>{resume.summary}</p>
+        </section>
+      ) : null}
     </header>
   );
 }
@@ -258,13 +286,15 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
   const theme = previewThemes[resume.templateId];
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(resume, section));
+  const showSummary = orderedSections.includes("summary");
+  const bodySections = orderedSections.filter((section) => section !== "summary");
   const allSkills = resume.skillGroups.flatMap((group) => group.skills).filter(hasText);
 
   return (
     <div className={theme.shell}>
-      <ResumeHeader resume={resume} theme={theme} />
+      <ResumeHeader resume={resume} theme={theme} showSummary={showSummary} />
       <div className="mt-3.5 space-y-3">
-        {orderedSections.map((section) => (
+        {bodySections.map((section) => (
           <ResumeSection key={section} resume={resume} section={section} theme={theme} />
         ))}
       </div>
