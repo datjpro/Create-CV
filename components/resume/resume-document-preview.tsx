@@ -134,26 +134,26 @@ function hasRenderableContent(resume: ResumeDocument, section: ResumeContentSect
 function sectionTitle(section: ResumeContentSection, resume: ResumeDocument) {
   switch (section) {
     case "summary":
-      return "Professional Summary";
+      return "PROFESSIONAL SUMMARY";
     case "skills":
-      return getSkillSectionLabel(resume.industryFocus);
+      return getSkillSectionLabel(resume.industryFocus).toUpperCase();
     case "projects":
-      return "Projects";
+      return "PROJECTS";
     case "experience":
-      return "Work Experience";
+      return "WORK EXPERIENCE";
     case "education":
-      return "Education";
+      return "EDUCATION";
     case "certifications":
-      return "Certifications";
+      return "CERTIFICATIONS";
     case "awards":
-      return "Awards";
+      return "AWARDS";
     case "activities":
-      return "Activities";
+      return "ACTIVITIES";
   }
 }
 
 function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }) {
-  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold uppercase tracking-[0.22em]", theme.heading)}>{label}</h2>;
+  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold", theme.heading)}>{label}</h2>;
 }
 
 function ResumeIdentity({ resume, theme }: { resume: ResumeDocument; theme: PreviewTheme }) {
@@ -188,7 +188,7 @@ function ResumeHeader({ resume, theme, showSummary }: { resume: ResumeDocument; 
           <div className="row-span-2 flex justify-end">{photo}</div>
           {showSummary ? (
             <section className="min-w-0">
-              <SectionHeading label="Professional Summary" theme={theme} />
+              <SectionHeading label="PROFESSIONAL SUMMARY" theme={theme} />
               <p className={cn("pr-1 text-[11px] leading-[1.42]", theme.subtleText)}>{resume.summary}</p>
             </section>
           ) : null}
@@ -202,7 +202,7 @@ function ResumeHeader({ resume, theme, showSummary }: { resume: ResumeDocument; 
       <ResumeIdentity resume={resume} theme={theme} />
       {showSummary ? (
         <section className="mt-3 min-w-0">
-          <SectionHeading label="Professional Summary" theme={theme} />
+          <SectionHeading label="PROFESSIONAL SUMMARY" theme={theme} />
           <p className={cn("text-[11px] leading-[1.42]", theme.subtleText)}>{resume.summary}</p>
         </section>
       ) : null}
@@ -245,7 +245,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
   if (section === "projects") {
     return (
       <section>
-        <SectionHeading label="Projects" theme={theme} />
+        <SectionHeading label="PROJECTS" theme={theme} />
         <div className="space-y-2.5">
           {resume.projects
             .filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role))
@@ -267,7 +267,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
   if (section === "experience") {
     return (
       <section>
-        <SectionHeading label="Work Experience" theme={theme} />
+        <SectionHeading label="WORK EXPERIENCE" theme={theme} />
         <div className="space-y-2.5">
           {resume.experiences
             .filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet)))
@@ -296,7 +296,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
   if (section === "education") {
     return (
       <section>
-        <SectionHeading label="Education" theme={theme} />
+        <SectionHeading label="EDUCATION" theme={theme} />
         <div className="space-y-2">
           {resume.education
             .filter((item) => hasText(item.degree) || hasText(item.school))
