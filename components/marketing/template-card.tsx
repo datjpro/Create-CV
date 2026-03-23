@@ -1,4 +1,5 @@
-import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
+﻿import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
+import { getIndustryFocusLabel } from "@/lib/resume-metadata";
 import { cn } from "@/lib/utils";
 import type { TemplatePreset } from "@/lib/template-library";
 
@@ -29,6 +30,11 @@ export function TemplateCard({ template, featured = false }: { template: Templat
             {template.name}
           </h3>
           <p className="mt-2 max-w-xl text-sm leading-6 text-on-surface-variant">{featured ? template.featuredCopy : template.description}</p>
+          <p className="mt-3 text-xs font-bold uppercase tracking-[0.22em] text-primary">{template.atsReadabilityLevel}</p>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+            Best for {template.bestForIndustries.map((industry) => getIndustryFocusLabel(industry)).join(", ")}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">{template.notes}</p>
         </div>
         <MarketingResumeLink
           templateId={template.id}

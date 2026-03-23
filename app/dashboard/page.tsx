@@ -88,7 +88,7 @@ function DashboardContent() {
               <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Dashboard</span>
               <h1 className="mt-4 font-[var(--font-headline)] text-5xl font-extrabold tracking-tight text-primary">Your resume workspace</h1>
               <p className="mt-3 max-w-2xl text-lg leading-8 text-on-surface-variant">
-                Create, duplicate and manage resume variants for different roles without rewriting your core profile every time.
+                Create, duplicate and manage ATS-ready resume variants for different roles without rewriting your core profile every time.
               </p>
             </div>
             <div className="flex gap-3">
@@ -119,7 +119,7 @@ function DashboardContent() {
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-fixed text-3xl font-bold text-primary">+</div>
               <h2 className="mt-5 font-[var(--font-headline)] text-2xl font-extrabold text-primary">Create New CV</h2>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-on-surface-variant">Start from a polished default document and switch templates later.</p>
+              <p className="mt-2 max-w-xs text-sm leading-6 text-on-surface-variant">Start from a blank editable starter and switch templates later.</p>
             </Link>
 
             {loading ? (
@@ -129,7 +129,7 @@ function DashboardContent() {
                 <span className="text-xs font-bold uppercase tracking-[0.28em] text-primary">Empty state</span>
                 <h2 className="mt-4 font-[var(--font-headline)] text-3xl font-extrabold tracking-tight text-on-surface">No resumes yet.</h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-on-surface-variant">
-                  Create your first resume from the dashboard or start from the template gallery. Your documents will stay scoped to your signed-in account.
+                  Create your first resume from the dashboard or start from the template gallery. Your documents stay scoped to your signed-in account and begin with editable real-content placeholders.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link href="/resume/new?template=professional" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary">Create resume</Link>
@@ -157,5 +157,3 @@ export default function DashboardPage() {
     </PrivateRouteShell>
   );
 }
-
-

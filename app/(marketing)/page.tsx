@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
 import { TemplateCard } from "@/components/marketing/template-card";
@@ -15,10 +15,10 @@ export default function HomePage() {
               ATS-ready CV Builder
             </span>
             <h1 className="mt-8 max-w-4xl font-[var(--font-headline)] text-5xl font-extrabold tracking-tight text-primary sm:text-7xl">
-              Build your professional CV in minutes.
+              Build your professional CV with real, editable content.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant sm:text-2xl">
-              Fast resume creation, editorial layouts and multi-template PDF export that stays text-selectable for recruiters and ATS systems.
+              Start from an ATS-safe one-column template, write your own story and export recruiter-friendly PDFs without hardcoded sample resumes.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <MarketingResumeLink
@@ -58,11 +58,11 @@ export default function HomePage() {
             <div>
               <span className="text-sm font-bold uppercase tracking-[0.28em] text-primary">The Collection</span>
               <h2 className="mt-4 font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-on-surface sm:text-5xl">
-                Curated templates for different career tones.
+                Curated templates with industry guidance built in.
               </h2>
             </div>
             <p className="max-w-xl text-lg leading-8 text-on-surface-variant">
-              Start from a premium structure and switch styles later without losing a single line of your content.
+              Pick the visual tone that fits your field, then customize every section without losing a single line of content.
             </p>
           </div>
           <div className="grid gap-8 lg:grid-cols-3">
@@ -77,9 +77,9 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-4 md:grid-rows-2 md:[grid-auto-rows:minmax(0,1fr)]">
           <div className="premium-gradient rounded-[2rem] p-10 text-on-primary md:col-span-2 md:row-span-2">
             <div className="mb-8 inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.26em]">Fast generation</div>
-            <h3 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight">Write less, polish faster.</h3>
+            <h3 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight">Write once, tailor faster.</h3>
             <p className="mt-6 max-w-lg text-lg leading-8 text-primary-fixed">
-              The editor keeps your content, preview and export flow in one place so you can iterate without context switching.
+              The editor keeps your content, ATS order, preview and export flow in one place so you can adapt for each role without starting over.
             </p>
           </div>
           <div className="rounded-[2rem] bg-secondary-container p-8">
@@ -95,7 +95,7 @@ export default function HomePage() {
           </div>
           <div className="rounded-[2rem] bg-surface-container p-8 text-center">
             <div className="text-xs font-bold uppercase tracking-[0.28em] text-primary">Flexible</div>
-            <h3 className="mt-3 text-2xl font-bold text-on-surface">Three template styles</h3>
+            <h3 className="mt-3 text-2xl font-bold text-on-surface">Industry-aware templates</h3>
           </div>
         </div>
       </section>
@@ -106,7 +106,7 @@ export default function HomePage() {
             Ready to upgrade your career story?
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant">
-            Choose a template, fill your details once, and export a polished CV whenever you need it.
+            Choose a template, enter your real experience once, and export a polished CV whenever you need it.
           </p>
           <MarketingResumeLink
             templateId="professional"
