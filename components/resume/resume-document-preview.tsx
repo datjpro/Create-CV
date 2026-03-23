@@ -1,4 +1,4 @@
-﻿/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
 import type { ResumeContentSection, ResumeDocument, TemplateId } from "@/lib/types";
 import { cn, formatDateRange } from "@/lib/utils";
@@ -14,7 +14,7 @@ type PreviewTheme = {
 
 const previewThemes: Record<TemplateId, PreviewTheme> = {
   professional: {
-    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] bg-white px-7 py-6 shadow-float",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] bg-white px-6 py-5 shadow-float",
     divider: "border-primary/20",
     heading: "text-primary border-primary/55",
     accentText: "text-primary",
@@ -22,7 +22,7 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     subtleText: "text-on-surface-variant"
   },
   minimal: {
-    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-outline-variant/35 bg-white px-7 py-6 shadow-float",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-outline-variant/35 bg-white px-6 py-5 shadow-float",
     divider: "border-outline-variant/40",
     heading: "text-on-surface border-outline-variant/60",
     accentText: "text-on-surface-variant",
@@ -30,7 +30,7 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     subtleText: "text-on-surface-variant"
   },
   creative: {
-    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-primary/15 bg-white px-7 py-6 shadow-float",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-primary/15 bg-white px-6 py-5 shadow-float",
     divider: "border-primary/25",
     heading: "text-primary border-primary/75",
     accentText: "text-primary",
@@ -38,8 +38,6 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     subtleText: "text-on-surface-variant"
   }
 };
-
-const trailingSections = new Set<ResumeContentSection>(["education", "certifications", "awards", "activities"]);
 
 function hasText(value: string) {
   return value.trim().length > 0;
@@ -64,31 +62,6 @@ function hasRenderableContent(resume: ResumeDocument, section: ResumeContentSect
     case "activities":
       return resume.activities.some((item) => hasText(item.name) || hasText(item.organization));
   }
-}
-
-function splitTrailingSections(sections: ResumeContentSection[]) {
-  const trailing: ResumeContentSection[] = [];
-
-  for (let index = sections.length - 1; index >= 0; index -= 1) {
-    const section = sections[index];
-    if (!trailingSections.has(section)) {
-      break;
-    }
-
-    trailing.unshift(section);
-  }
-
-  if (trailing.length === 0) {
-    return {
-      leading: sections,
-      trailing: [] as ResumeContentSection[]
-    };
-  }
-
-  return {
-    leading: sections.slice(0, sections.length - trailing.length),
-    trailing
-  };
 }
 
 function sectionTitle(section: ResumeContentSection, resume: ResumeDocument) {
@@ -127,12 +100,12 @@ function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: Previe
   ].filter(hasText);
 
   return (
-    <header className={cn("border-b pb-4", theme.divider)}>
-      <div className="flex items-start justify-between gap-4">
+    <header className={cn("border-b pb-3", theme.divider)}>
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="font-[var(--font-headline)] text-[28px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
-          <p className={cn("mt-1 text-sm font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
-          {contactItems.length > 0 ? <p className={cn("mt-2 text-[11px] leading-5", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
+          <h1 className="font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
+          <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
+          {contactItems.length > 0 ? <p className={cn("mt-1.5 text-[10.5px] leading-[1.45]", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
         </div>
         {resume.avatarUrl ? (
           <img
@@ -140,7 +113,7 @@ function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: Previe
             alt={resume.personal.fullName || "Profile photo"}
             className={cn(
               "shrink-0 object-cover border border-outline-variant/25",
-              resume.avatarFrame === "portrait" ? "h-[148px] w-[108px] rounded-[1rem]" : "h-[118px] w-[118px] rounded-[1rem]"
+              resume.avatarFrame === "portrait" ? "h-[164px] w-[120px] rounded-[1rem]" : "h-[128px] w-[128px] rounded-[1rem]"
             )}
           />
         ) : null}
@@ -185,7 +158,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section>
         <SectionHeading label="Projects" theme={theme} />
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {resume.projects
             .filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role))
             .map((project) => (
@@ -207,7 +180,7 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
     return (
       <section>
         <SectionHeading label="Work Experience" theme={theme} />
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {resume.experiences
             .filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some((bullet) => hasText(bullet)))
             .map((item) => (
@@ -285,26 +258,18 @@ function ResumeSection({ resume, section, theme }: { resume: ResumeDocument; sec
 export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
   const theme = previewThemes[resume.templateId];
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(resume, section));
-  const { leading, trailing } = splitTrailingSections(orderedSections);
   const allSkills = resume.skillGroups.flatMap((group) => group.skills).filter(hasText);
 
   return (
     <div className={theme.shell}>
       <ResumeHeader resume={resume} theme={theme} />
-      <div className="mt-4 space-y-4">
-        {leading.map((section) => (
+      <div className="mt-3.5 space-y-3">
+        {orderedSections.map((section) => (
           <ResumeSection key={section} resume={resume} section={section} theme={theme} />
         ))}
-        {trailing.length > 0 ? (
-          <div className="page-break-avoid space-y-4">
-            {trailing.map((section) => (
-              <ResumeSection key={`trailing-${section}`} resume={resume} section={section} theme={theme} />
-            ))}
-          </div>
-        ) : null}
       </div>
       {resume.templateId === "creative" && allSkills.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-1.5 border-t border-primary/15 pt-3">
+        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-primary/15 pt-2.5">
           {allSkills.slice(0, 6).map((skill) => (
             <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>
               {skill}
@@ -315,3 +280,4 @@ export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
     </div>
   );
 }
+
