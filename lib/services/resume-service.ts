@@ -10,7 +10,6 @@ import {
   query,
   setDoc
 } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 import {
   buildDefaultResume,
@@ -22,10 +21,16 @@ import {
   createEmptyProject,
   createEmptySkillGroup
 } from "@/lib/default-resume";
-import { firebaseDb, firebaseStorage } from "@/lib/firebase/client";
-import type { ResumeDocument, TemplateId } from "@/lib/types";
+import { firebaseDb } from "@/lib/firebase/client";
+import type { AvatarFrame, ResumeDocument, TemplateId } from "@/lib/types";
 
 const DEMO_RESUMES_KEY = "create-cv-demo-resumes";
+const LOCAL_AVATAR_KEY = "create-cv-local-avatar-map";
+
+type LocalAvatarEntry = {
+  avatarUrl: string;
+  avatarFrame: AvatarFrame;
+};
 
 function getDemoResumes(): ResumeDocument[] {
   if (typeof window === "undefined") {
@@ -38,6 +43,77 @@ function getDemoResumes(): ResumeDocument[] {
 
 function setDemoResumes(resumes: ResumeDocument[]) {
   window.localStorage.setItem(DEMO_RESUMES_KEY, JSON.stringify(resumes));
+}
+
+function getLocalAvatarMap(): Record<string, LocalAvatarEntry> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const raw = window.localStorage.getItem(LOCAL_AVATAR_KEY);
+  return raw ? (JSON.parse(raw) as Record<string, LocalAvatarEntry>) : {};
+}
+
+function setLocalAvatarMap(entries: Record<string, LocalAvatarEntry>) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(LOCAL_AVATAR_KEY, JSON.stringify(entries));
+}
+
+function saveLocalAvatar(resume: Pick<ResumeDocument, "id" | "avatarUrl" | "avatarFrame">) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const entries = getLocalAvatarMap();
+
+  if (!resume.avatarUrl) {
+    delete entries[resume.id];
+  } else {
+    entries[resume.id] = {
+      avatarUrl: resume.avatarUrl,
+      avatarFrame: resume.avatarFrame
+    };
+  }
+
+  setLocalAvatarMap(entries);
+}
+
+function readLocalAvatar(resumeId: string): LocalAvatarEntry | null {
+  return getLocalAvatarMap()[resumeId] ?? null;
+}
+
+function deleteLocalAvatar(resumeId: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const entries = getLocalAvatarMap();
+  delete entries[resumeId];
+  setLocalAvatarMap(entries);
+}
+
+function stripLocalAvatar(resume: ResumeDocument): ResumeDocument {
+  return {
+    ...resume,
+    avatarUrl: ""
+  };
+}
+
+function mergeLocalAvatar(resume: ResumeDocument): ResumeDocument {
+  const localAvatar = readLocalAvatar(resume.id);
+
+  if (!localAvatar) {
+    return resume;
+  }
+
+  return {
+    ...resume,
+    avatarUrl: localAvatar.avatarUrl,
+    avatarFrame: localAvatar.avatarFrame ?? resume.avatarFrame ?? "square"
+  };
 }
 
 function ensureArray<T>(items: T[] | undefined, fallback: () => T, alwaysSeed = true) {
@@ -65,6 +141,8 @@ export function normalizeResume(resume: ResumeDocument): ResumeDocument {
     ...resume,
     industryFocus: resume.industryFocus ?? "general",
     careerStage: resume.careerStage ?? "under_3_years",
+    avatarUrl: resume.avatarUrl ?? "",
+    avatarFrame: resume.avatarFrame ?? "square",
     experiences: ensureArray(resume.experiences, createEmptyExperience),
     education: ensureArray(resume.education, createEmptyEducation),
     skillGroups,
@@ -124,7 +202,7 @@ function ensureResumeBelongsToUser(resume: ResumeDocument | null | undefined, us
     throw new Error("Resume not found.");
   }
 
-  return normalizeResume(resume);
+  return mergeLocalAvatar(normalizeResume(resume));
 }
 
 function resumesCollection(userId: string) {
@@ -144,10 +222,10 @@ export async function listResumes(userId: string) {
     }
 
     const snapshot = await getDocs(query(collectionRef, orderBy("updatedAt", "desc")));
-    return snapshot.docs.map((entry) => normalizeResume(entry.data() as ResumeDocument));
+    return snapshot.docs.map((entry) => mergeLocalAvatar(normalizeResume(entry.data() as ResumeDocument)));
   }
 
-  return sortResumes(getDemoResumes().filter((resume) => resume.userId === userId).map(normalizeResume));
+  return sortResumes(getDemoResumes().filter((resume) => resume.userId === userId).map(normalizeResume).map(mergeLocalAvatar));
 }
 
 export async function getResume(userId: string, resumeId: string) {
@@ -159,11 +237,11 @@ export async function getResume(userId: string, resumeId: string) {
       return null;
     }
 
-    return normalizeResume(snapshot.data() as ResumeDocument);
+    return mergeLocalAvatar(normalizeResume(snapshot.data() as ResumeDocument));
   }
 
   const resume = getDemoResumes().find((entry) => entry.userId === userId && entry.id === resumeId);
-  return resume ? normalizeResume(resume) : null;
+  return resume ? mergeLocalAvatar(normalizeResume(resume)) : null;
 }
 
 export async function createResume(userId: string, templateId: TemplateId = "professional", resumeId?: string) {
@@ -171,7 +249,7 @@ export async function createResume(userId: string, templateId: TemplateId = "pro
 
   if (firebaseDb) {
     const reference = doc(firebaseDb, "users", userId, "resumes", resume.id);
-    await setDoc(reference, resume);
+    await setDoc(reference, stripLocalAvatar(resume));
     return resume;
   }
 
@@ -179,9 +257,9 @@ export async function createResume(userId: string, templateId: TemplateId = "pro
   const existingIndex = resumes.findIndex((entry) => entry.userId === userId && entry.id === resume.id);
 
   if (existingIndex === -1) {
-    resumes.push(resume);
+    resumes.push(stripLocalAvatar(resume));
   } else {
-    resumes[existingIndex] = resume;
+    resumes[existingIndex] = stripLocalAvatar(resume);
   }
 
   setDemoResumes(resumes);
@@ -194,9 +272,12 @@ export async function saveResume(resume: ResumeDocument) {
     updatedAt: Date.now()
   });
 
+  saveLocalAvatar(nextResume);
+  const persistedResume = stripLocalAvatar(nextResume);
+
   if (firebaseDb) {
     const reference = doc(firebaseDb, "users", resume.userId, "resumes", resume.id);
-    await setDoc(reference, nextResume);
+    await setDoc(reference, persistedResume);
     return nextResume;
   }
 
@@ -204,9 +285,9 @@ export async function saveResume(resume: ResumeDocument) {
   const index = resumes.findIndex((entry) => entry.id === resume.id && entry.userId === resume.userId);
 
   if (index === -1) {
-    resumes.push(nextResume);
+    resumes.push(persistedResume);
   } else {
-    resumes[index] = nextResume;
+    resumes[index] = persistedResume;
   }
 
   setDemoResumes(resumes);
@@ -217,19 +298,23 @@ export async function duplicateResume(userId: string, resumeId: string) {
   const source = ensureResumeBelongsToUser(await getResume(userId, resumeId), userId);
   const duplicate = cloneResume(source);
 
+  saveLocalAvatar(duplicate);
+
   if (firebaseDb) {
     const reference = doc(firebaseDb, "users", userId, "resumes", duplicate.id);
-    await setDoc(reference, duplicate);
+    await setDoc(reference, stripLocalAvatar(duplicate));
     return duplicate;
   }
 
   const resumes = getDemoResumes();
-  resumes.push(duplicate);
+  resumes.push(stripLocalAvatar(duplicate));
   setDemoResumes(resumes);
   return duplicate;
 }
 
 export async function deleteResumeById(userId: string, resumeId: string) {
+  deleteLocalAvatar(resumeId);
+
   if (firebaseDb) {
     await deleteDoc(doc(firebaseDb, "users", userId, "resumes", resumeId));
     return;
@@ -239,13 +324,7 @@ export async function deleteResumeById(userId: string, resumeId: string) {
   setDemoResumes(resumes);
 }
 
-export async function uploadAvatar(userId: string, resumeId: string, file: File) {
-  if (firebaseStorage) {
-    const storageRef = ref(firebaseStorage, `users/${userId}/resumes/${resumeId}/avatar/${file.name}`);
-    await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
-  }
-
+export async function uploadAvatar(_userId: string, _resumeId: string, file: File) {
   return await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");

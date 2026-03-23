@@ -12,6 +12,7 @@ import {
 import type {
   ActivityItem,
   AwardItem,
+  AvatarFrame,
   CareerStage,
   CertificationItem,
   EducationItem,
@@ -41,6 +42,8 @@ type ResumeEditorState = {
   updateCareerStage: (careerStage: CareerStage) => void;
   updateSummary: (summary: string) => void;
   setAvatarUrl: (avatarUrl: string) => void;
+  updateAvatarFrame: (avatarFrame: AvatarFrame) => void;
+  clearAvatar: () => void;
   updatePersonal: (field: keyof ResumeDocument["personal"], value: string) => void;
   updateExperience: (id: string, field: keyof ExperienceItem, value: string | boolean) => void;
   updateExperienceBullets: (id: string, value: string) => void;
@@ -107,6 +110,20 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
       withDirty(state.resume, (resume) => ({
         ...resume,
         avatarUrl
+      }))
+    ),
+  updateAvatarFrame: (avatarFrame) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        avatarFrame
+      }))
+    ),
+  clearAvatar: () =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        avatarUrl: ""
       }))
     ),
   updatePersonal: (field, value) =>

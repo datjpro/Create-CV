@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -15,7 +15,7 @@ import {
   getSummaryHint,
   industryFocusOptions
 } from "@/lib/resume-metadata";
-import { getResume, saveResume } from "@/lib/services/resume-service";
+import { getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
 import { templateLibrary } from "@/lib/template-library";
 import type { ResumeDocument, ResumeFormSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -88,6 +88,9 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const updateIndustryFocus = useResumeEditorStore((state) => state.updateIndustryFocus);
   const updateCareerStage = useResumeEditorStore((state) => state.updateCareerStage);
   const updateSummary = useResumeEditorStore((state) => state.updateSummary);
+  const setAvatarUrl = useResumeEditorStore((state) => state.setAvatarUrl);
+  const updateAvatarFrame = useResumeEditorStore((state) => state.updateAvatarFrame);
+  const clearAvatar = useResumeEditorStore((state) => state.clearAvatar);
   const updatePersonal = useResumeEditorStore((state) => state.updatePersonal);
   const updateExperience = useResumeEditorStore((state) => state.updateExperience);
   const updateExperienceBullets = useResumeEditorStore((state) => state.updateExperienceBullets);
@@ -116,6 +119,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [mobileView, setMobileView] = useState<"build" | "preview">("build");
 
@@ -205,6 +209,31 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
       setError(nextError instanceof Error ? nextError.message : "Unable to save resume.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleAvatarUpload(event: ChangeEvent<HTMLInputElement>) {
+    if (!user || !resume) {
+      return;
+    }
+
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setError("");
+
+    try {
+      const avatarUrl = await uploadAvatar(user.uid, resume.id, file);
+      setAvatarUrl(avatarUrl);
+      setStatusMessage("Photo stored in this browser for the current resume.");
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Unable to upload photo.");
+    } finally {
+      setUploadingAvatar(false);
+      event.target.value = "";
     }
   }
 
@@ -337,13 +366,59 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                   </select>
                   <p className="mt-2 text-xs leading-5 text-on-surface-variant">{careerStageOptions.find((option) => option.value === resume.careerStage)?.note}</p>
                 </div>
-                <div className="md:col-span-2 flex flex-wrap items-center gap-4 rounded-[1.5rem] bg-surface-container-low p-4">
-                  {resume.avatarUrl ? <img src={resume.avatarUrl} alt={resume.personal.fullName} className="h-16 w-16 rounded-2xl object-cover" /> : <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-fixed text-lg font-bold text-primary">{resume.personal.fullName.slice(0, 1) || "A"}</div>}
-                  <div>
-                    <div className="rounded-xl bg-surface-container-high px-4 py-3 text-sm font-semibold text-on-surface">Avatar upload deferred</div>
-                    <p className="mt-2 max-w-md text-xs leading-5 text-on-surface-variant">
-                      Photos are not shown in the ATS preview. Keep the document text-first while Firebase Storage stays off the Blaze plan.
-                    </p>
+                <div className="md:col-span-2 rounded-[1.5rem] bg-surface-container-low p-4">
+                  <div className="flex flex-wrap items-start gap-4">
+                    {resume.avatarUrl ? (
+                      <img
+                        src={resume.avatarUrl}
+                        alt={resume.personal.fullName}
+                        className={cn("object-cover shadow-sm", resume.avatarFrame === "portrait" ? "h-24 w-20 rounded-[1.25rem]" : "h-20 w-20 rounded-2xl")}
+                      />
+                    ) : (
+                      <div className={cn("flex items-center justify-center bg-primary-fixed text-lg font-bold text-primary", resume.avatarFrame === "portrait" ? "h-24 w-20 rounded-[1.25rem]" : "h-20 w-20 rounded-2xl")}>
+                        {resume.personal.fullName.slice(0, 1) || "A"}
+                      </div>
+                    )}
+                    <div className="min-w-[220px] flex-1">
+                      <div className="rounded-xl bg-surface-container-high px-4 py-3 text-sm font-semibold text-on-surface">Photo stays in this browser only</div>
+                      <p className="mt-2 max-w-xl text-xs leading-5 text-on-surface-variant">
+                        Add a profile photo locally for this device. It will appear in the CV preview and export, but the image file is not uploaded to Firebase Storage.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-3">
+                        <label className="cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary transition hover:opacity-95">
+                          {uploadingAvatar ? "Uploading..." : resume.avatarUrl ? "Replace photo" : "Upload photo"}
+                          <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                        </label>
+                        {resume.avatarUrl ? (
+                          <button
+                            type="button"
+                            onClick={() => clearAvatar()}
+                            className="rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-container-highest"
+                          >
+                            Remove photo
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="mt-4">
+                        <FieldLabel>Photo frame</FieldLabel>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateAvatarFrame("square")}
+                            className={cn("rounded-full px-4 py-2 text-sm font-semibold transition", resume.avatarFrame === "square" ? "bg-primary text-on-primary" : "bg-surface-container-high text-on-surface-variant")}
+                          >
+                            Square
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateAvatarFrame("portrait")}
+                            className={cn("rounded-full px-4 py-2 text-sm font-semibold transition", resume.avatarFrame === "portrait" ? "bg-primary text-on-primary" : "bg-surface-container-high text-on-surface-variant")}
+                          >
+                            Portrait
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -662,4 +737,14 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+
 

@@ -1,4 +1,5 @@
-﻿import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
+﻿/* eslint-disable @next/next/no-img-element */
+import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
 import type { ResumeContentSection, ResumeDocument, TemplateId } from "@/lib/types";
 import { cn, formatDateRange } from "@/lib/utils";
 
@@ -100,9 +101,23 @@ function ResumeHeader({ resume, theme }: { resume: ResumeDocument; theme: Previe
 
   return (
     <header className={cn("border-b pb-4", theme.divider)}>
-      <h1 className="font-[var(--font-headline)] text-[28px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
-      <p className={cn("mt-1 text-sm font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
-      {contactItems.length > 0 ? <p className={cn("mt-2 text-[11px] leading-5", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-[var(--font-headline)] text-[28px] font-extrabold tracking-tight text-on-surface">{resume.personal.fullName || "Your name"}</h1>
+          <p className={cn("mt-1 text-sm font-semibold", theme.accentText)}>{resume.personal.title || "Professional title"}</p>
+          {contactItems.length > 0 ? <p className={cn("mt-2 text-[11px] leading-5", theme.subtleText)}>{contactItems.join(" | ")}</p> : null}
+        </div>
+        {resume.avatarUrl ? (
+          <img
+            src={resume.avatarUrl}
+            alt={resume.personal.fullName || "Profile photo"}
+            className={cn(
+              "shrink-0 object-cover border border-outline-variant/25",
+              resume.avatarFrame === "portrait" ? "h-[86px] w-[68px] rounded-[1rem]" : "h-[72px] w-[72px] rounded-[1rem]"
+            )}
+          />
+        ) : null}
+      </div>
     </header>
   );
 }
@@ -265,4 +280,6 @@ export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
     </div>
   );
 }
+
+
 

@@ -102,6 +102,7 @@ export function buildDefaultResume(userId: string, templateId: TemplateId = "pro
     industryFocus: "general",
     careerStage: "under_3_years",
     avatarUrl: "",
+    avatarFrame: "square",
     personal: {
       fullName: "",
       title: "",
@@ -124,3 +125,5 @@ export function buildDefaultResume(userId: string, templateId: TemplateId = "pro
     updatedAt: now
   };
 }
+
+

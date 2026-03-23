@@ -6,6 +6,8 @@ export type IndustryFocus = "general" | "it" | "marketing" | "finance";
 
 export type CareerStage = "student" | "under_3_years" | "3_plus_years";
 
+export type AvatarFrame = "square" | "portrait";
+
 export type AppUser = {
   uid: string;
   email: string;
@@ -98,6 +100,7 @@ export type ResumeDocument = {
   industryFocus: IndustryFocus;
   careerStage: CareerStage;
   avatarUrl: string;
+  avatarFrame: AvatarFrame;
   personal: PersonalInfo;
   summary: string;
   experiences: ExperienceItem[];
@@ -124,3 +127,6 @@ export type ResumeFormSection =
   | "activities";
 
 export type ResumeContentSection = Exclude<ResumeFormSection, "personal">;
+
+
+
