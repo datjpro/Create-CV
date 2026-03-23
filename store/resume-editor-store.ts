@@ -1,19 +1,28 @@
 ﻿import { create } from "zustand";
 
+import {
+  createEmptyActivity,
+  createEmptyAward,
+  createEmptyCertification,
+  createEmptyEducation,
+  createEmptyExperience,
+  createEmptyProject,
+  createEmptySkillGroup
+} from "@/lib/default-resume";
 import type {
+  ActivityItem,
+  AwardItem,
+  CareerStage,
+  CertificationItem,
   EducationItem,
   ExperienceItem,
+  IndustryFocus,
   ProjectItem,
   ResumeDocument,
   ResumeFormSection,
+  SkillGroup,
   TemplateId
 } from "@/lib/types";
-
-function createId(prefix: string) {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? `${prefix}-${crypto.randomUUID()}`
-    : `${prefix}-${Date.now()}`;
-}
 
 function updateById<T extends { id: string }>(items: T[], id: string, updater: (item: T) => T) {
   return items.map((item) => (item.id === id ? updater(item) : item));
@@ -28,6 +37,8 @@ type ResumeEditorState = {
   setActiveSection: (section: ResumeFormSection) => void;
   updateTitle: (title: string) => void;
   updateTemplate: (templateId: TemplateId) => void;
+  updateIndustryFocus: (industryFocus: IndustryFocus) => void;
+  updateCareerStage: (careerStage: CareerStage) => void;
   updateSummary: (summary: string) => void;
   setAvatarUrl: (avatarUrl: string) => void;
   updatePersonal: (field: keyof ResumeDocument["personal"], value: string) => void;
@@ -41,9 +52,19 @@ type ResumeEditorState = {
   updateProject: (id: string, field: keyof ProjectItem, value: string) => void;
   addProject: () => void;
   removeProject: (id: string) => void;
-  addSkill: (value: string) => void;
-  updateSkill: (index: number, value: string) => void;
-  removeSkill: (index: number) => void;
+  updateSkillGroup: (id: string, field: keyof SkillGroup, value: string) => void;
+  updateSkillGroupSkills: (id: string, value: string) => void;
+  addSkillGroup: () => void;
+  removeSkillGroup: (id: string) => void;
+  updateCertification: (id: string, field: keyof CertificationItem, value: string) => void;
+  addCertification: () => void;
+  removeCertification: (id: string) => void;
+  updateAward: (id: string, field: keyof AwardItem, value: string) => void;
+  addAward: () => void;
+  removeAward: (id: string) => void;
+  updateActivity: (id: string, field: keyof ActivityItem, value: string) => void;
+  addActivity: () => void;
+  removeActivity: (id: string) => void;
 };
 
 function withDirty(resume: ResumeDocument | null, updater: (resume: ResumeDocument) => ResumeDocument) {
@@ -78,6 +99,8 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
   setActiveSection: (activeSection) => set({ activeSection }),
   updateTitle: (title) => set((state) => withDirty(state.resume, (resume) => ({ ...resume, title }))),
   updateTemplate: (templateId) => set((state) => withDirty(state.resume, (resume) => ({ ...resume, templateId }))),
+  updateIndustryFocus: (industryFocus) => set((state) => withDirty(state.resume, (resume) => ({ ...resume, industryFocus }))),
+  updateCareerStage: (careerStage) => set((state) => withDirty(state.resume, (resume) => ({ ...resume, careerStage }))),
   updateSummary: (summary) => set((state) => withDirty(state.resume, (resume) => ({ ...resume, summary }))),
   setAvatarUrl: (avatarUrl) =>
     set((state) =>
@@ -123,20 +146,7 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
     set((state) =>
       withDirty(state.resume, (resume) => ({
         ...resume,
-        experiences: [
-          ...resume.experiences,
-          {
-            id: createId("exp"),
-            jobTitle: "",
-            employer: "",
-            location: "",
-            startDate: "",
-            endDate: "",
-            current: false,
-            description: "",
-            bullets: []
-          }
-        ]
+        experiences: [...resume.experiences, createEmptyExperience()]
       }))
     ),
   removeExperience: (id) =>
@@ -160,18 +170,7 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
     set((state) =>
       withDirty(state.resume, (resume) => ({
         ...resume,
-        education: [
-          ...resume.education,
-          {
-            id: createId("edu"),
-            degree: "",
-            school: "",
-            location: "",
-            startDate: "",
-            endDate: "",
-            description: ""
-          }
-        ]
+        education: [...resume.education, createEmptyEducation()]
       }))
     ),
   removeEducation: (id) =>
@@ -195,18 +194,7 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
     set((state) =>
       withDirty(state.resume, (resume) => ({
         ...resume,
-        projects: [
-          ...resume.projects,
-          {
-            id: createId("project"),
-            name: "",
-            role: "",
-            startDate: "",
-            endDate: "",
-            description: "",
-            link: ""
-          }
-        ]
+        projects: [...resume.projects, createEmptyProject()]
       }))
     ),
   removeProject: (id) =>
@@ -216,30 +204,113 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
         projects: resume.projects.filter((item) => item.id !== id)
       }))
     ),
-  addSkill: (value) =>
-    set((state) => {
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return { resume: state.resume, dirty: state.dirty };
-      }
-
-      return withDirty(state.resume, (resume) => ({
-        ...resume,
-        skills: [...resume.skills, trimmed]
-      }));
-    }),
-  updateSkill: (index, value) =>
+  updateSkillGroup: (id, field, value) =>
     set((state) =>
       withDirty(state.resume, (resume) => ({
         ...resume,
-        skills: resume.skills.map((skill, skillIndex) => (skillIndex === index ? value : skill))
+        skillGroups: updateById(resume.skillGroups, id, (item) => ({
+          ...item,
+          [field]: value
+        }))
       }))
     ),
-  removeSkill: (index) =>
+  updateSkillGroupSkills: (id, value) =>
     set((state) =>
       withDirty(state.resume, (resume) => ({
         ...resume,
-        skills: resume.skills.filter((_, skillIndex) => skillIndex !== index)
+        skillGroups: updateById(resume.skillGroups, id, (item) => ({
+          ...item,
+          skills: value
+            .split("\n")
+            .map((entry) => entry.trim())
+            .filter(Boolean)
+        }))
+      }))
+    ),
+  addSkillGroup: () =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        skillGroups: [...resume.skillGroups, createEmptySkillGroup(`Group ${resume.skillGroups.length + 1}`)]
+      }))
+    ),
+  removeSkillGroup: (id) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        skillGroups: resume.skillGroups.filter((item) => item.id !== id)
+      }))
+    ),
+  updateCertification: (id, field, value) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        certifications: updateById(resume.certifications, id, (item) => ({
+          ...item,
+          [field]: value
+        }))
+      }))
+    ),
+  addCertification: () =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        certifications: [...resume.certifications, createEmptyCertification()]
+      }))
+    ),
+  removeCertification: (id) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        certifications: resume.certifications.filter((item) => item.id !== id)
+      }))
+    ),
+  updateAward: (id, field, value) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        awards: updateById(resume.awards, id, (item) => ({
+          ...item,
+          [field]: value
+        }))
+      }))
+    ),
+  addAward: () =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        awards: [...resume.awards, createEmptyAward()]
+      }))
+    ),
+  removeAward: (id) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        awards: resume.awards.filter((item) => item.id !== id)
+      }))
+    ),
+  updateActivity: (id, field, value) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        activities: updateById(resume.activities, id, (item) => ({
+          ...item,
+          [field]: value
+        }))
+      }))
+    ),
+  addActivity: () =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        activities: [...resume.activities, createEmptyActivity()]
+      }))
+    ),
+  removeActivity: (id) =>
+    set((state) =>
+      withDirty(state.resume, (resume) => ({
+        ...resume,
+        activities: resume.activities.filter((item) => item.id !== id)
       }))
     )
 }));

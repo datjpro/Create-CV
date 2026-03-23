@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   collection,
@@ -12,7 +12,16 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-import { buildDefaultResume } from "@/lib/default-resume";
+import {
+  buildDefaultResume,
+  createEmptyActivity,
+  createEmptyAward,
+  createEmptyCertification,
+  createEmptyEducation,
+  createEmptyExperience,
+  createEmptyProject,
+  createEmptySkillGroup
+} from "@/lib/default-resume";
 import { firebaseDb, firebaseStorage } from "@/lib/firebase/client";
 import type { ResumeDocument, TemplateId } from "@/lib/types";
 
@@ -31,9 +40,44 @@ function setDemoResumes(resumes: ResumeDocument[]) {
   window.localStorage.setItem(DEMO_RESUMES_KEY, JSON.stringify(resumes));
 }
 
+function ensureArray<T>(items: T[] | undefined, fallback: () => T, alwaysSeed = true) {
+  if (!items || items.length === 0) {
+    return alwaysSeed ? [fallback()] : [];
+  }
+
+  return items;
+}
+
+export function normalizeResume(resume: ResumeDocument): ResumeDocument {
+  const skillGroups =
+    resume.skillGroups && resume.skillGroups.length > 0
+      ? resume.skillGroups
+      : resume.skills && resume.skills.length > 0
+        ? [
+            {
+              ...createEmptySkillGroup("Core Skills"),
+              skills: resume.skills.filter(Boolean)
+            }
+          ]
+        : [createEmptySkillGroup("Core Skills")];
+
+  return {
+    ...resume,
+    industryFocus: resume.industryFocus ?? "general",
+    careerStage: resume.careerStage ?? "under_3_years",
+    experiences: ensureArray(resume.experiences, createEmptyExperience),
+    education: ensureArray(resume.education, createEmptyEducation),
+    skillGroups,
+    projects: ensureArray(resume.projects, createEmptyProject),
+    certifications: ensureArray(resume.certifications, createEmptyCertification, false),
+    awards: ensureArray(resume.awards, createEmptyAward, false),
+    activities: ensureArray(resume.activities, createEmptyActivity, false)
+  };
+}
+
 function cloneResume(source: ResumeDocument): ResumeDocument {
   const now = Date.now();
-  const next = structuredClone(source);
+  const next = structuredClone(normalizeResume(source));
 
   next.id = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `resume-${now}`;
   next.title = `${source.title} Copy`;
@@ -51,6 +95,22 @@ function cloneResume(source: ResumeDocument): ResumeDocument {
     ...item,
     id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${item.id}-${now}`
   }));
+  next.skillGroups = next.skillGroups.map((item) => ({
+    ...item,
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${item.id}-${now}`
+  }));
+  next.certifications = next.certifications.map((item) => ({
+    ...item,
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${item.id}-${now}`
+  }));
+  next.awards = next.awards.map((item) => ({
+    ...item,
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${item.id}-${now}`
+  }));
+  next.activities = next.activities.map((item) => ({
+    ...item,
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${item.id}-${now}`
+  }));
 
   return next;
 }
@@ -64,7 +124,7 @@ function ensureResumeBelongsToUser(resume: ResumeDocument | null | undefined, us
     throw new Error("Resume not found.");
   }
 
-  return resume;
+  return normalizeResume(resume);
 }
 
 function resumesCollection(userId: string) {
@@ -84,10 +144,10 @@ export async function listResumes(userId: string) {
     }
 
     const snapshot = await getDocs(query(collectionRef, orderBy("updatedAt", "desc")));
-    return snapshot.docs.map((entry) => entry.data() as ResumeDocument);
+    return snapshot.docs.map((entry) => normalizeResume(entry.data() as ResumeDocument));
   }
 
-  return sortResumes(getDemoResumes().filter((resume) => resume.userId === userId));
+  return sortResumes(getDemoResumes().filter((resume) => resume.userId === userId).map(normalizeResume));
 }
 
 export async function getResume(userId: string, resumeId: string) {
@@ -99,14 +159,15 @@ export async function getResume(userId: string, resumeId: string) {
       return null;
     }
 
-    return snapshot.data() as ResumeDocument;
+    return normalizeResume(snapshot.data() as ResumeDocument);
   }
 
-  return getDemoResumes().find((resume) => resume.userId === userId && resume.id === resumeId) ?? null;
+  const resume = getDemoResumes().find((entry) => entry.userId === userId && entry.id === resumeId);
+  return resume ? normalizeResume(resume) : null;
 }
 
 export async function createResume(userId: string, templateId: TemplateId = "professional", resumeId?: string) {
-  const resume = buildDefaultResume(userId, templateId, resumeId);
+  const resume = normalizeResume(buildDefaultResume(userId, templateId, resumeId));
 
   if (firebaseDb) {
     const reference = doc(firebaseDb, "users", userId, "resumes", resume.id);
@@ -128,10 +189,10 @@ export async function createResume(userId: string, templateId: TemplateId = "pro
 }
 
 export async function saveResume(resume: ResumeDocument) {
-  const nextResume = {
+  const nextResume = normalizeResume({
     ...resume,
     updatedAt: Date.now()
-  };
+  });
 
   if (firebaseDb) {
     const reference = doc(firebaseDb, "users", resume.userId, "resumes", resume.id);

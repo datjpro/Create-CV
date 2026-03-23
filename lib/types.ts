@@ -1,6 +1,10 @@
-export type TemplateId = "minimal" | "professional" | "creative";
+﻿export type TemplateId = "minimal" | "professional" | "creative";
 
 export type AuthProviderId = "password" | "google" | "github" | "demo";
+
+export type IndustryFocus = "general" | "it" | "marketing" | "finance";
+
+export type CareerStage = "student" | "under_3_years" | "3_plus_years";
 
 export type AppUser = {
   uid: string;
@@ -55,19 +59,55 @@ export type ProjectItem = {
   link: string;
 };
 
+export type SkillGroup = {
+  id: string;
+  name: string;
+  skills: string[];
+};
+
+export type CertificationItem = {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  description: string;
+};
+
+export type AwardItem = {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  description: string;
+};
+
+export type ActivityItem = {
+  id: string;
+  name: string;
+  organization: string;
+  date: string;
+  description: string;
+};
+
 export type ResumeDocument = {
   id: string;
   userId: string;
   title: string;
   status: ResumeStatus;
   templateId: TemplateId;
+  industryFocus: IndustryFocus;
+  careerStage: CareerStage;
   avatarUrl: string;
   personal: PersonalInfo;
   summary: string;
   experiences: ExperienceItem[];
   education: EducationItem[];
-  skills: string[];
+  skills?: string[];
+  skillGroups: SkillGroup[];
   projects: ProjectItem[];
+  certifications: CertificationItem[];
+  awards: AwardItem[];
+  activities: ActivityItem[];
   createdAt: number;
   updatedAt: number;
 };
@@ -78,4 +118,9 @@ export type ResumeFormSection =
   | "experience"
   | "education"
   | "skills"
-  | "projects";
+  | "projects"
+  | "certifications"
+  | "awards"
+  | "activities";
+
+export type ResumeContentSection = Exclude<ResumeFormSection, "personal">;
