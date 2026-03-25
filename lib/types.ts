@@ -1,4 +1,4 @@
-﻿export type TemplateId =
+export type TemplateId =
   | "minimal"
   | "professional"
   | "creative"
@@ -15,6 +15,17 @@ export type IndustryFocus = "general" | "it" | "marketing" | "finance";
 export type CareerStage = "student" | "under_3_years" | "3_plus_years";
 
 export type AvatarFrame = "square" | "portrait";
+
+export type Locale = "vi" | "en";
+
+export type ThemePreference = "light" | "dark" | "system";
+
+export type ResolvedTheme = Exclude<ThemePreference, "system">;
+
+export type AppPreferences = {
+  locale: Locale;
+  theme: ThemePreference;
+};
 
 export type AppUser = {
   uid: string;
@@ -135,6 +146,3 @@ export type ResumeFormSection =
   | "activities";
 
 export type ResumeContentSection = Exclude<ResumeFormSection, "personal">;
-
-
-

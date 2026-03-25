@@ -1,5 +1,7 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
+
+import { getPreferencesBootstrapScript } from "@/lib/services/app-preferences-service";
 
 import "./globals.css";
 import { AppProviders } from "./providers";
@@ -26,10 +28,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: getPreferencesBootstrapScript() }} />
+      </head>
       <body suppressHydrationWarning className={`${inter.variable} ${manrope.variable} bg-surface text-on-surface`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
 }
-
