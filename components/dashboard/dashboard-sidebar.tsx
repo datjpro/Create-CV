@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/dashboard", label: "My Resumes" },
   { href: "/templates", label: "Templates" },
-  { href: "/resume/new", label: "New Resume" }
+  { href: "/resume/new", label: "New Resume" },
+  { href: "/settings", label: "Settings" }
 ];
 
 export function DashboardSidebar() {
@@ -45,7 +46,9 @@ export function DashboardSidebar() {
               href={item.href}
               className={cn(
                 "flex items-center rounded-2xl px-4 py-3 text-sm font-semibold transition",
-                active ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:bg-white/70 hover:text-on-surface"
+                active
+                  ? "bg-surface-container-lowest text-primary shadow-sm"
+                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
               )}
             >
               {item.label}
@@ -66,5 +69,3 @@ export function DashboardSidebar() {
     </aside>
   );
 }
-
-

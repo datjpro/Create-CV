@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,6 +41,9 @@ export function DashboardMobileBar() {
         </Link>
         <Link href="/templates" className="rounded-xl bg-surface-container-high px-4 py-2 text-sm font-bold text-on-surface">
           Templates
+        </Link>
+        <Link href="/settings" className="rounded-xl bg-surface-container-high px-4 py-2 text-sm font-bold text-on-surface">
+          Settings
         </Link>
       </div>
     </div>

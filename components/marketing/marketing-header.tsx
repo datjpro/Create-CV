@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { MarketingAccountLink, MarketingResumeLink } from "@/components/marketing/marketing-auth-link";
+import { PublicPreferenceControls } from "@/components/settings/public-preference-controls";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -17,7 +18,7 @@ export function MarketingHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-outline-variant/20 glass-panel">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-8">
         <Link href="/" className="font-[var(--font-headline)] text-xl font-extrabold tracking-tight text-primary">
           CV-Tech
         </Link>
@@ -38,7 +39,8 @@ export function MarketingHeader() {
             );
           })}
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <PublicPreferenceControls />
           <MarketingAccountLink
             className="rounded-xl px-4 py-2 font-semibold text-on-surface-variant transition hover:bg-surface-container-low"
             guestLabel="Login"
@@ -55,5 +57,3 @@ export function MarketingHeader() {
     </header>
   );
 }
-
-

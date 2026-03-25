@@ -1,10 +1,11 @@
-ï»¿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { PublicPreferenceControls } from "@/components/settings/public-preference-controls";
 
 function readRedirectTarget() {
   if (typeof window === "undefined") {
@@ -75,10 +76,11 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
 
   return (
     <main className="flex min-h-screen flex-col bg-surface">
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 sm:px-8">
+      <header className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 sm:px-8">
         <Link href="/" className="font-[var(--font-headline)] text-xl font-extrabold tracking-tight text-primary">
           CV-Tech
         </Link>
+        <PublicPreferenceControls />
       </header>
       <section className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
@@ -137,7 +139,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
                     onChange={(event) => setDisplayName(event.target.value)}
                     placeholder="Alex Architect"
                     required
-                    className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-white focus:shadow-sm"
+                    className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm"
                   />
                 </div>
               ) : null}
@@ -149,7 +151,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="alex@architect.com"
                   required
-                  className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-white focus:shadow-sm"
+                  className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm"
                 />
               </div>
               <div>
@@ -161,10 +163,10 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-white focus:shadow-sm"
+                  className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm"
                 />
               </div>
               <button
@@ -191,5 +193,3 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     </main>
   );
 }
-
-
