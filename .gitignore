@@ -423,3 +423,5 @@ FodyWeavers.xsd
 *.msp
 
 *.tsbuildinfo
+firebase-admin-key.json
+scripts/firebase-admin-key.json
