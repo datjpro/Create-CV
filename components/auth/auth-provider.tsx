@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { PropsWithChildren } from "react";
 
+import { firebaseAuth } from "@/lib/firebase/client";
 import {
   getResolvedAuthMode,
   initializeAuthPersistence,
@@ -18,7 +19,10 @@ import type { AppUser } from "@/lib/types";
 type AuthContextValue = {
   user: AppUser | null;
   loading: boolean;
+  claimsLoading: boolean;
   authMode: "firebase" | "demo";
+  isAdmin: boolean;
+  refreshClaims: () => Promise<void>;
   loginWithEmail: (payload: { email: string; password: string }) => Promise<AppUser>;
   registerWithEmail: (payload: { email: string; password: string; displayName: string }) => Promise<AppUser>;
   loginWithGoogle: () => Promise<AppUser>;
@@ -31,6 +35,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [claimsLoading, setClaimsLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const authMode = getResolvedAuthMode();
 
   useEffect(() => {
@@ -56,18 +62,92 @@ export function AuthProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
+  useEffect(() => {
+    if (authMode !== "firebase") {
+      setClaimsLoading(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    if (!user) {
+      setClaimsLoading(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    if (!firebaseAuth?.currentUser) {
+      setClaimsLoading(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    let active = true;
+    setClaimsLoading(true);
+
+    void firebaseAuth.currentUser
+      .getIdTokenResult()
+      .then((result) => {
+        if (!active) {
+          return;
+        }
+
+        setIsAdmin(result.claims.admin === true);
+      })
+      .catch(() => {
+        if (!active) {
+          return;
+        }
+
+        setIsAdmin(false);
+      })
+      .finally(() => {
+        if (!active) {
+          return;
+        }
+
+        setClaimsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [authMode, user]);
+  const refreshClaims = useCallback(async () => {
+    if (authMode !== "firebase") {
+      return;
+    }
+
+    if (!firebaseAuth?.currentUser) {
+      return;
+    }
+
+    setClaimsLoading(true);
+
+    try {
+      const result = await firebaseAuth.currentUser.getIdTokenResult(true);
+      setIsAdmin(result.claims.admin === true);
+    } catch {
+      setIsAdmin(false);
+    } finally {
+      setClaimsLoading(false);
+    }
+  }, [authMode]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       loading,
+      claimsLoading,
       authMode,
+      isAdmin,
+      refreshClaims,
       loginWithEmail,
       registerWithEmail,
       loginWithGoogle,
       loginWithGithub,
       logout
     }),
-    [user, loading, authMode]
+    [user, loading, claimsLoading, authMode, isAdmin, refreshClaims]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

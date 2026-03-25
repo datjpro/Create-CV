@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 
@@ -6,10 +6,11 @@ import { MarketingResumeLink } from "@/components/marketing/marketing-auth-link"
 import { TemplateCard } from "@/components/marketing/template-card";
 import { TemplatePreview } from "@/components/marketing/template-preview";
 import { useI18n } from "@/components/settings/use-i18n";
-import { templateLibrary } from "@/lib/template-library";
+import { useTemplateCatalog } from "@/components/templates/template-catalog-provider";
 
 export default function HomePage() {
   const { copy } = useI18n();
+  const { publicTemplates } = useTemplateCatalog();
 
   return (
     <main>
@@ -66,12 +67,10 @@ export default function HomePage() {
                 {copy.marketing.home.collectionTitle}
               </h2>
             </div>
-            <p className="max-w-xl text-lg leading-8 text-on-surface-variant">
-              {copy.marketing.home.collectionDescription}
-            </p>
+            <p className="max-w-xl text-lg leading-8 text-on-surface-variant">{copy.marketing.home.collectionDescription}</p>
           </div>
           <div className="grid gap-8 lg:grid-cols-3">
-            {templateLibrary.map((template) => (
+            {publicTemplates.map((template) => (
               <TemplateCard key={template.id} template={template} />
             ))}
           </div>
@@ -83,9 +82,7 @@ export default function HomePage() {
           <div className="premium-gradient rounded-[2rem] p-10 text-on-primary md:col-span-2 md:row-span-2">
             <div className="mb-8 inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.26em]">{copy.marketing.home.featureEyebrow}</div>
             <h3 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight">{copy.marketing.home.featureTitle}</h3>
-            <p className="mt-6 max-w-lg text-lg leading-8 text-primary-fixed">
-              {copy.marketing.home.featureDescription}
-            </p>
+            <p className="mt-6 max-w-lg text-lg leading-8 text-primary-fixed">{copy.marketing.home.featureDescription}</p>
           </div>
           <div className="rounded-[2rem] bg-secondary-container p-8">
             <div className="flex items-center justify-between gap-4">
@@ -107,12 +104,8 @@ export default function HomePage() {
 
       <section className="px-6 py-24 sm:px-8">
         <div className="mx-auto max-w-5xl rounded-[2.5rem] bg-surface-container-lowest p-12 text-center shadow-editorial sm:p-20">
-          <h2 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">
-            {copy.marketing.home.finalTitle}
-          </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant">
-            {copy.marketing.home.finalDescription}
-          </p>
+          <h2 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">{copy.marketing.home.finalTitle}</h2>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-on-surface-variant">{copy.marketing.home.finalDescription}</p>
           <MarketingResumeLink
             templateId="professional"
             className="premium-gradient mt-10 inline-flex rounded-2xl px-10 py-5 text-lg font-bold text-on-primary shadow-float transition hover:-translate-y-0.5"
@@ -124,4 +117,3 @@ export default function HomePage() {
     </main>
   );
 }
-

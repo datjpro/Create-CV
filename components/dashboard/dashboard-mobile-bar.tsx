@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { useI18n } from "@/components/settings/use-i18n";
 import { logout } from "@/lib/services/auth-service";
 
 export function DashboardMobileBar() {
-  const { user } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { copy } = useI18n();
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -36,8 +36,8 @@ export function DashboardMobileBar() {
         <Link href="/resume/new" className="premium-gradient rounded-xl px-4 py-2 text-sm font-bold text-on-primary">{copy.dashboard.newResume}</Link>
         <Link href="/templates" className="rounded-xl bg-surface-container-high px-4 py-2 text-sm font-bold text-on-surface">{copy.common.templates}</Link>
         <Link href="/settings" className="rounded-xl bg-surface-container-high px-4 py-2 text-sm font-bold text-on-surface">{copy.common.settings}</Link>
+        {isAdmin ? <Link href="/admin" className="rounded-xl bg-surface-container-high px-4 py-2 text-sm font-bold text-on-surface">Admin</Link> : null}
       </div>
     </div>
   );
 }
-

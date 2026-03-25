@@ -1,15 +1,16 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { TemplatePreview } from "@/components/marketing/template-preview";
 import { useI18n } from "@/components/settings/use-i18n";
+import { useTemplateCatalog } from "@/components/templates/template-catalog-provider";
 import { getIndustryFocusLabel } from "@/lib/resume-metadata";
 import { createResume } from "@/lib/services/resume-service";
-import { buildResumeCreateHref, templateLibrary } from "@/lib/template-library";
+import { buildResumeCreateHref } from "@/lib/template-library";
 import type { TemplateId } from "@/lib/types";
 
 const RESUME_CREATION_INTENT_KEY = "createCvResumeCreationIntent";
@@ -89,6 +90,7 @@ function CreateResumeFlow({ templateId }: { templateId: TemplateId }) {
 
 function TemplatePicker() {
   const { locale, copy } = useI18n();
+  const { publicTemplates } = useTemplateCatalog();
 
   return (
     <main className="min-h-screen bg-surface px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
@@ -103,7 +105,7 @@ function TemplatePicker() {
         </div>
 
         <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {templateLibrary.map((template) => {
+          {publicTemplates.map((template) => {
             const templateCopy = copy.templateMeta[template.id];
 
             return (
@@ -133,10 +135,19 @@ function TemplatePicker() {
 }
 
 export function NewResumePageClient({ templateId }: { templateId: TemplateId | null }) {
-  if (!templateId) {
+  const { publicTemplates } = useTemplateCatalog();
+
+  const resolvedTemplateId = useMemo(() => {
+    if (!templateId) {
+      return null;
+    }
+
+    return publicTemplates.some((template) => template.id === templateId) ? templateId : null;
+  }, [publicTemplates, templateId]);
+
+  if (!resolvedTemplateId) {
     return <TemplatePicker />;
   }
 
-  return <CreateResumeFlow templateId={templateId} />;
+  return <CreateResumeFlow templateId={resolvedTemplateId} />;
 }
-

@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { useI18n } from "@/components/settings/use-i18n";
@@ -12,16 +12,21 @@ import { cn } from "@/lib/utils";
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { copy } = useI18n();
   const [pending, setPending] = useState(false);
 
-  const navigation = [
-    { href: "/dashboard", label: copy.dashboard.stats.resumes },
-    { href: "/templates", label: copy.common.templates },
-    { href: "/resume/new", label: copy.dashboard.newResume },
-    { href: "/settings", label: copy.common.settings }
-  ];
+  const navigation = useMemo(
+    () =>
+      [
+        { href: "/dashboard", label: copy.dashboard.stats.resumes },
+        { href: "/templates", label: copy.common.templates },
+        { href: "/resume/new", label: copy.dashboard.newResume },
+        { href: "/settings", label: copy.common.settings },
+        ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : [])
+      ] as const,
+    [copy.common.settings, copy.common.templates, copy.dashboard.newResume, copy.dashboard.stats.resumes, isAdmin]
+  );
 
   async function handleLogout() {
     setPending(true);
@@ -41,18 +46,31 @@ export function DashboardSidebar() {
         {navigation.map((item) => {
           const active = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
           return (
-            <Link key={item.href} href={item.href} className={cn("flex items-center rounded-2xl px-4 py-3 text-sm font-semibold transition", active ? "bg-surface-container-lowest text-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface")}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                active
+                  ? "bg-surface-container-lowest text-primary shadow-sm"
+                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+              )}
+            >
               {item.label}
             </Link>
           );
         })}
       </nav>
       <div className="mt-auto pt-6">
-        <button type="button" onClick={handleLogout} disabled={pending} className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-on-primary transition hover:opacity-95 disabled:opacity-60">
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={pending}
+          className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-on-primary transition hover:opacity-95 disabled:opacity-60"
+        >
           {pending ? copy.dashboard.loggingOut : copy.dashboard.logout}
         </button>
       </div>
     </aside>
   );
 }
-
