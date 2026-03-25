@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -6,6 +6,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { PublicPreferenceControls } from "@/components/settings/public-preference-controls";
+import { useI18n } from "@/components/settings/use-i18n";
 
 function readRedirectTarget() {
   if (typeof window === "undefined") {
@@ -18,6 +19,7 @@ function readRedirectTarget() {
 export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
   const { authMode, loading, user, loginWithEmail, loginWithGithub, loginWithGoogle, registerWithEmail } = useAuth();
+  const { copy } = useI18n();
   const [redirectTarget, setRedirectTarget] = useState("/dashboard");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -74,11 +76,14 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     }
   }
 
+  const title = mode === "login" ? copy.auth.loginTitle : copy.auth.registerTitle;
+  const description = mode === "login" ? copy.auth.loginDescription : copy.auth.registerDescription;
+
   return (
     <main className="flex min-h-screen flex-col bg-surface">
       <header className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 sm:px-8">
         <Link href="/" className="font-[var(--font-headline)] text-xl font-extrabold tracking-tight text-primary">
-          CV-Tech
+          {copy.common.brandName}
         </Link>
         <PublicPreferenceControls />
       </header>
@@ -86,105 +91,50 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
         <div className="w-full max-w-md">
           <div className="rounded-[2rem] bg-surface-container-low p-8 shadow-editorial sm:p-10">
             <div className="text-center">
-              <h1 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-on-surface">
-                {mode === "login" ? "Welcome back" : "Create your workspace"}
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-on-surface-variant">
-                {mode === "login"
-                  ? "Sign in to keep editing and exporting your resumes."
-                  : "Create an account to save resumes, switch templates and export PDF."}
-              </p>
+              <h1 className="font-[var(--font-headline)] text-4xl font-extrabold tracking-tight text-on-surface">{title}</h1>
+              <p className="mt-3 text-sm leading-6 text-on-surface-variant">{description}</p>
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleProvider("google")}
-                disabled={pending}
-                className="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleProvider("github")}
-                disabled={pending}
-                className="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                GitHub
-              </button>
+              <button type="button" onClick={() => handleProvider("google")} disabled={pending} className="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60">{copy.auth.google}</button>
+              <button type="button" onClick={() => handleProvider("github")} disabled={pending} className="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60">{copy.auth.github}</button>
             </div>
 
             <div className="relative my-6 flex items-center justify-center">
               <div className="h-px w-full bg-outline-variant/40" />
-              <span className="absolute bg-surface-container-low px-4 text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">
-                or continue with email
-              </span>
+              <span className="absolute bg-surface-container-low px-4 text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">{copy.auth.emailDivider}</span>
             </div>
 
-            {authMode === "demo" ? (
-              <div className="mb-5 rounded-2xl bg-primary-fixed px-4 py-3 text-sm leading-6 text-on-primary-fixed-variant">
-                Demo mode is active because Firebase env variables are missing. Email, Google and GitHub flows still work locally for testing.
-              </div>
-            ) : null}
-
+            {authMode === "demo" ? <div className="mb-5 rounded-2xl bg-primary-fixed px-4 py-3 text-sm leading-6 text-on-primary-fixed-variant">{copy.auth.demoMode}</div> : null}
             {error ? <div className="mb-5 rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container">{error}</div> : null}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {mode === "register" ? (
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant">Full name</label>
-                  <input
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    placeholder="Alex Architect"
-                    required
-                    className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm"
-                  />
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant">{copy.auth.fullName}</label>
+                  <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Alex Architect" required className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm" />
                 </div>
               ) : null}
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant">Email address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="alex@architect.com"
-                  required
-                  className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm"
-                />
+                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant">{copy.auth.email}</label>
+                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="alex@architect.com" required className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm" />
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <label className="block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant">Password</label>
-                  {mode === "login" ? <span className="text-xs font-semibold text-primary">Use any saved demo password</span> : null}
+                  <label className="block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant">{copy.auth.password}</label>
+                  {mode === "login" ? <span className="text-xs font-semibold text-primary">{copy.auth.loginPasswordHint}</span> : null}
                 </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm"
-                />
+                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minLength={6} className="w-full rounded-xl border-0 bg-surface-container-lowest px-4 py-3 text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm" />
               </div>
-              <button
-                type="submit"
-                disabled={pending}
-                className="premium-gradient w-full rounded-2xl px-4 py-4 font-bold text-on-primary shadow-float transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {pending ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
+              <button type="submit" disabled={pending} className="premium-gradient w-full rounded-2xl px-4 py-4 font-bold text-on-primary shadow-float transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60">
+                {pending ? copy.auth.submitWaiting : mode === "login" ? copy.auth.signIn : copy.auth.createAccount}
               </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-on-surface-variant">
-              {mode === "login" ? "Need an account?" : "Already have an account?"}{" "}
-              <Link
-                href={mode === "login" ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : `/login?redirect=${encodeURIComponent(redirectTarget)}`}
-                className="font-bold text-primary hover:underline"
-              >
-                {mode === "login" ? "Create account" : "Sign in"}
+              {mode === "login" ? copy.auth.needAccount : copy.auth.alreadyHaveAccount}{" "}
+              <Link href={mode === "login" ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : `/login?redirect=${encodeURIComponent(redirectTarget)}`} className="font-bold text-primary hover:underline">
+                {mode === "login" ? copy.auth.createAccountLink : copy.auth.signInLink}
               </Link>
             </p>
           </div>
@@ -193,3 +143,4 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     </main>
   );
 }
+

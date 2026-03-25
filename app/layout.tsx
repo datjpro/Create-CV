@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 
-import { getPreferencesBootstrapScript } from "@/lib/services/app-preferences-service";
+import { getPreferencesBootstrapScript } from "@/lib/services/app-preferences-shared";
 
 import "./globals.css";
 import { AppProviders } from "./providers";
@@ -37,3 +37,4 @@ export default function RootLayout({
     </html>
   );
 }
+

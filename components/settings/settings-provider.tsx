@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from "react";
 
@@ -164,3 +164,4 @@ export function useSettings() {
 
   return context;
 }
+

@@ -8,11 +8,13 @@ import { PrivateRouteShell } from "@/components/auth/private-route-shell";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardMobileBar } from "@/components/dashboard/dashboard-mobile-bar";
 import { ResumeCard } from "@/components/dashboard/resume-card";
+import { useI18n } from "@/components/settings/use-i18n";
 import { deleteResumeById, duplicateResume, listResumes } from "@/lib/services/resume-service";
 import type { ResumeDocument } from "@/lib/types";
 
 function DashboardContent() {
   const { user } = useAuth();
+  const { copy } = useI18n();
   const [resumes, setResumes] = useState<ResumeDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -56,7 +58,7 @@ function DashboardContent() {
       return;
     }
 
-    if (typeof window !== "undefined" && !window.confirm("Delete this resume?")) {
+    if (typeof window !== "undefined" && !window.confirm(copy.dashboard.confirmDelete)) {
       return;
     }
 
@@ -71,11 +73,11 @@ function DashboardContent() {
     const readyCount = resumes.filter((resume) => resume.status === "ready").length;
 
     return [
-      { label: "Resumes", value: resumes.length.toString() },
-      { label: "Templates used", value: templateCount.toString() },
-      { label: "Ready to export", value: readyCount.toString() }
+      { label: copy.dashboard.stats.resumes, value: resumes.length.toString() },
+      { label: copy.dashboard.stats.templatesUsed, value: templateCount.toString() },
+      { label: copy.dashboard.stats.readyToExport, value: readyCount.toString() }
     ];
-  }, [resumes]);
+  }, [copy.dashboard.stats, resumes]);
 
   return (
     <div className="min-h-screen bg-surface lg:flex">
@@ -85,19 +87,13 @@ function DashboardContent() {
           <DashboardMobileBar />
           <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Dashboard</span>
-              <h1 className="mt-4 font-[var(--font-headline)] text-5xl font-extrabold tracking-tight text-primary">Your resume workspace</h1>
-              <p className="mt-3 max-w-2xl text-lg leading-8 text-on-surface-variant">
-                Create, duplicate and manage ATS-ready resume variants for different roles without rewriting your core profile every time.
-              </p>
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">{copy.common.dashboard}</span>
+              <h1 className="mt-4 font-[var(--font-headline)] text-5xl font-extrabold tracking-tight text-primary">{copy.dashboard.title}</h1>
+              <p className="mt-3 max-w-2xl text-lg leading-8 text-on-surface-variant">{copy.dashboard.subtitle}</p>
             </div>
             <div className="flex gap-3">
-              <Link href="/templates" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest">
-                Browse templates
-              </Link>
-              <Link href="/resume/new" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95">
-                New resume
-              </Link>
+              <Link href="/templates" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest">{copy.dashboard.browseTemplates}</Link>
+              <Link href="/resume/new" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95">{copy.dashboard.newResume}</Link>
             </div>
           </header>
 
@@ -110,30 +106,25 @@ function DashboardContent() {
             ))}
           </section>
 
-          {error ? <div className="mb-6 flex flex-col gap-3 rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container sm:flex-row sm:items-center sm:justify-between"><span>{error}</span><button type="button" onClick={() => refresh()} className="rounded-xl bg-white/70 px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-error">Retry</button></div> : null}
+          {error ? <div className="mb-6 flex flex-col gap-3 rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container sm:flex-row sm:items-center sm:justify-between"><span>{error}</span><button type="button" onClick={() => refresh()} className="rounded-xl bg-surface-container-lowest px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-error">{copy.common.retry}</button></div> : null}
 
           <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            <Link
-              href="/resume/new"
-              className="flex min-h-[420px] flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-outline-variant bg-surface-container-low text-center transition hover:border-primary hover:bg-white"
-            >
+            <Link href="/resume/new" className="flex min-h-[420px] flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed border-outline-variant bg-surface-container-low text-center transition hover:border-primary hover:bg-surface-container-high">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-fixed text-3xl font-bold text-primary">+</div>
-              <h2 className="mt-5 font-[var(--font-headline)] text-2xl font-extrabold text-primary">Create New CV</h2>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-on-surface-variant">Start from a blank editable starter and switch templates later.</p>
+              <h2 className="mt-5 font-[var(--font-headline)] text-2xl font-extrabold text-primary">{copy.dashboard.createCardTitle}</h2>
+              <p className="mt-2 max-w-xs text-sm leading-6 text-on-surface-variant">{copy.dashboard.createCardDescription}</p>
             </Link>
 
             {loading ? (
-              <div className="col-span-full rounded-[1.75rem] bg-surface-container-low p-8 text-center text-on-surface-variant">Loading resumes...</div>
+              <div className="col-span-full rounded-[1.75rem] bg-surface-container-low p-8 text-center text-on-surface-variant">{copy.dashboard.loading}</div>
             ) : resumes.length === 0 ? (
               <div className="col-span-full rounded-[1.75rem] bg-surface-container-low p-10">
-                <span className="text-xs font-bold uppercase tracking-[0.28em] text-primary">Empty state</span>
-                <h2 className="mt-4 font-[var(--font-headline)] text-3xl font-extrabold tracking-tight text-on-surface">No resumes yet.</h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-on-surface-variant">
-                  Create your first resume from the dashboard or start from the template gallery. Your documents stay scoped to your signed-in account and begin with editable real-content placeholders.
-                </p>
+                <span className="text-xs font-bold uppercase tracking-[0.28em] text-primary">{copy.dashboard.emptyEyebrow}</span>
+                <h2 className="mt-4 font-[var(--font-headline)] text-3xl font-extrabold tracking-tight text-on-surface">{copy.dashboard.emptyTitle}</h2>
+                <p className="mt-4 max-w-xl text-base leading-7 text-on-surface-variant">{copy.dashboard.emptyDescription}</p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link href="/resume/new" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary">Create resume</Link>
-                  <Link href="/templates" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface">Open templates</Link>
+                  <Link href="/resume/new" className="premium-gradient rounded-2xl px-5 py-3 text-sm font-bold text-on-primary">{copy.common.createResume}</Link>
+                  <Link href="/templates" className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface">{copy.dashboard.openTemplates}</Link>
                 </div>
               </div>
             ) : (
@@ -157,3 +148,4 @@ export default function DashboardPage() {
     </PrivateRouteShell>
   );
 }
+

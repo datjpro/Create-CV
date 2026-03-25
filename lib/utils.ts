@@ -1,11 +1,17 @@
-import { clsx, type ClassValue } from "clsx";
+﻿import { clsx, type ClassValue } from "clsx";
+
+import type { Locale } from "@/lib/types";
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
 }
 
-export function formatUpdatedAt(timestamp: number) {
-  return new Intl.DateTimeFormat("en-US", {
+export function toIntlLocale(locale: Locale) {
+  return locale === "vi" ? "vi-VN" : "en-US";
+}
+
+export function formatUpdatedAt(timestamp: number, locale: Locale = "en") {
+  return new Intl.DateTimeFormat(toIntlLocale(locale), {
     month: "short",
     day: "numeric",
     year: "numeric"
@@ -29,3 +35,4 @@ export function slugifyTitle(title: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+

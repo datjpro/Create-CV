@@ -1,56 +1,40 @@
-﻿import type { CareerStage, IndustryFocus, ResumeContentSection, ResumeDocument } from "@/lib/types";
+﻿import type { CareerStage, IndustryFocus, ResumeContentSection, ResumeDocument, Locale } from "@/lib/types";
+import { getResumeMetaCopy } from "@/lib/i18n/resume-meta";
 
-export const industryFocusOptions: Array<{ value: IndustryFocus; label: string; note: string }> = [
-  {
-    value: "general",
-    label: "General corporate",
-    note: "Best for operations, HR, admin and broad business roles."
-  },
-  {
-    value: "it",
-    label: "IT and software",
-    note: "Keeps technical skills and projects prominent for engineering roles."
-  },
-  {
-    value: "marketing",
-    label: "Marketing and creative",
-    note: "Keeps voice concise while still leaving room for campaigns and portfolio work."
-  },
-  {
-    value: "finance",
-    label: "Finance and legal",
-    note: "Prioritizes conservative structure and a highly scannable order."
-  }
-];
+export function getIndustryFocusOptions(locale: Locale = "en"): Array<{ value: IndustryFocus; label: string; note: string }> {
+  const copy = getResumeMetaCopy(locale).industryFocus;
 
-export const careerStageOptions: Array<{ value: CareerStage; label: string; note: string }> = [
-  {
-    value: "student",
-    label: "Student or new graduate",
-    note: "Education is promoted higher in the resume."
-  },
-  {
-    value: "under_3_years",
-    label: "Under 3 years experience",
-    note: "Balances education and experience for early-career roles."
-  },
-  {
-    value: "3_plus_years",
-    label: "3+ years experience",
-    note: "Experience stays ahead of education by default."
-  }
-];
-
-export function getIndustryFocusLabel(industryFocus: IndustryFocus) {
-  return industryFocusOptions.find((option) => option.value === industryFocus)?.label ?? "General corporate";
+  return [
+    { value: "general", label: copy.general.label, note: copy.general.note },
+    { value: "it", label: copy.it.label, note: copy.it.note },
+    { value: "marketing", label: copy.marketing.label, note: copy.marketing.note },
+    { value: "finance", label: copy.finance.label, note: copy.finance.note }
+  ];
 }
 
-export function getCareerStageLabel(careerStage: CareerStage) {
-  return careerStageOptions.find((option) => option.value === careerStage)?.label ?? "Under 3 years experience";
+export function getCareerStageOptions(locale: Locale = "en"): Array<{ value: CareerStage; label: string; note: string }> {
+  const copy = getResumeMetaCopy(locale).careerStage;
+
+  return [
+    { value: "student", label: copy.student.label, note: copy.student.note },
+    { value: "under_3_years", label: copy.under_3_years.label, note: copy.under_3_years.note },
+    { value: "3_plus_years", label: copy["3_plus_years"].label, note: copy["3_plus_years"].note }
+  ];
 }
 
-export function getSkillSectionLabel(industryFocus: IndustryFocus) {
-  return industryFocus === "it" ? "Technical Skills" : "Skills";
+export function getIndustryFocusLabel(industryFocus: IndustryFocus, locale: Locale = "en") {
+  const options = getIndustryFocusOptions(locale);
+  return options.find((option) => option.value === industryFocus)?.label ?? options[0].label;
+}
+
+export function getCareerStageLabel(careerStage: CareerStage, locale: Locale = "en") {
+  const options = getCareerStageOptions(locale);
+  return options.find((option) => option.value === careerStage)?.label ?? options[1].label;
+}
+
+export function getSkillSectionLabel(industryFocus: IndustryFocus, locale: Locale = "en") {
+  const copy = getResumeMetaCopy(locale).skillSectionLabel;
+  return industryFocus === "it" ? copy.it : copy.default;
 }
 
 export function getSectionOrder(resume: Pick<ResumeDocument, "industryFocus" | "careerStage">): ResumeContentSection[] {
@@ -79,28 +63,11 @@ export function getSectionOrder(resume: Pick<ResumeDocument, "industryFocus" | "
   ];
 }
 
-export function getSummaryHint(industryFocus: IndustryFocus) {
-  switch (industryFocus) {
-    case "it":
-      return "Write 2-4 lines covering your stack, years of experience and the kind of engineering problems you solve.";
-    case "marketing":
-      return "Lead with campaign impact, brand or channel strengths and the audience you understand best.";
-    case "finance":
-      return "Keep this concise and formal. Emphasize accuracy, domain knowledge and measurable responsibility.";
-    default:
-      return "Write 2-4 lines covering your experience, strengths and the direction you are targeting.";
-  }
+export function getSummaryHint(industryFocus: IndustryFocus, locale: Locale = "en") {
+  return getResumeMetaCopy(locale).summaryHint[industryFocus];
 }
 
-export function getSkillsHint(industryFocus: IndustryFocus) {
-  switch (industryFocus) {
-    case "it":
-      return "Group skills by categories such as Languages, Frameworks, Databases and DevOps/Tools.";
-    case "marketing":
-      return "Use groups like Channels, Analytics, Content, Campaigns and Tools.";
-    case "finance":
-      return "Use groups like Core Skills, Systems, Compliance, Analysis or Reporting.";
-    default:
-      return "Use short searchable groups such as Core Skills, Tools, Certifications or Languages.";
-  }
+export function getSkillsHint(industryFocus: IndustryFocus, locale: Locale = "en") {
+  return getResumeMetaCopy(locale).skillsHint[industryFocus];
 }
+

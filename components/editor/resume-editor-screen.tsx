@@ -6,35 +6,25 @@ import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { useI18n } from "@/components/settings/use-i18n";
 import { TemplateSwitcher } from "@/components/editor/template-switcher";
 import { ResumeDocumentPreview } from "@/components/resume/resume-document-preview";
 import {
-  careerStageOptions,
+  getCareerStageOptions,
   getIndustryFocusLabel,
+  getIndustryFocusOptions,
   getSkillsHint,
-  getSummaryHint,
-  industryFocusOptions
+  getSummaryHint
 } from "@/lib/resume-metadata";
 import { getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
-import { templateLibrary } from "@/lib/template-library";
 import type { ResumeDocument, ResumeFormSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useResumeEditorStore } from "@/store/resume-editor-store";
 
-const sections: Array<{ id: ResumeFormSection; label: string }> = [
-  { id: "personal", label: "Profile" },
-  { id: "summary", label: "Summary" },
-  { id: "skills", label: "Skills" },
-  { id: "projects", label: "Projects" },
-  { id: "experience", label: "Experience" },
-  { id: "education", label: "Education" },
-  { id: "certifications", label: "Certifications" },
-  { id: "awards", label: "Awards" },
-  { id: "activities", label: "Activities" }
-];
+const sectionIds: ResumeFormSection[] = ["personal", "summary", "skills", "projects", "experience", "education", "certifications", "awards", "activities"];
 
 const inputClass =
-  "w-full rounded-xl border-0 bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none ring-0 transition focus:bg-white focus:shadow-sm";
+  "w-full rounded-xl border-0 bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm";
 const textareaClass = `${inputClass} min-h-[120px] resize-y`;
 
 function SectionCard({
@@ -76,6 +66,7 @@ function getCompletionScore(resume: ResumeDocument) {
 
 export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const { user } = useAuth();
+  const { locale, copy } = useI18n();
   const printRef = useRef<HTMLDivElement | null>(null);
   const resume = useResumeEditorStore((state) => state.resume);
   const dirty = useResumeEditorStore((state) => state.dirty);
@@ -123,6 +114,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const [statusMessage, setStatusMessage] = useState("");
   const [mobileView, setMobileView] = useState<"build" | "preview">("build");
 
+  const industryFocusOptions = useMemo(() => getIndustryFocusOptions(locale), [locale]);
+  const careerStageOptions = useMemo(() => getCareerStageOptions(locale), [locale]);
+  const sections = useMemo(() => sectionIds.map((id) => ({ id, label: copy.editor.sections[id] })), [copy.editor.sections]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -145,7 +140,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
         }
       } catch (nextError) {
         if (!cancelled) {
-          setError(nextError instanceof Error ? nextError.message : "Unable to load resume.");
+          setError(nextError instanceof Error ? nextError.message : copy.editor.unavailableDescription);
         }
       } finally {
         if (!cancelled) {
@@ -159,7 +154,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [resumeId, setResume, user]);
+  }, [copy.editor.unavailableDescription, resumeId, setResume, user]);
 
   useEffect(() => {
     if (!dirty) {
@@ -186,7 +181,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
 
   const progress = useMemo(() => (resume ? getCompletionScore(resume) : 0), [resume]);
 
-  const activeTemplate = templateLibrary.find((template) => template.id === resume?.templateId);
+  const activeTemplate = resume ? copy.templateMeta[resume.templateId] : null;
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: resume?.title ? `${resume.title.replace(/\s+/g, "-").toLowerCase()}` : "resume",
@@ -204,9 +199,9 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     try {
       const savedResume = await saveResume(resume);
       markSaved(savedResume);
-      setStatusMessage("All changes saved.");
+      setStatusMessage(copy.editor.saved);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to save resume.");
+      setError(nextError instanceof Error ? nextError.message : copy.editor.unavailableDescription);
     } finally {
       setSaving(false);
     }
@@ -228,9 +223,9 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     try {
       const avatarUrl = await uploadAvatar(user.uid, resume.id, file);
       setAvatarUrl(avatarUrl);
-      setStatusMessage("Photo stored in this browser for the current resume.");
+      setStatusMessage(copy.editor.photoStored);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to upload photo.");
+      setError(nextError instanceof Error ? nextError.message : copy.editor.unavailableDescription);
     } finally {
       setUploadingAvatar(false);
       event.target.value = "";
@@ -242,7 +237,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
       <main className="flex min-h-screen items-center justify-center bg-surface px-6">
         <div className="rounded-[2rem] bg-surface-container-low p-8 text-center shadow-editorial">
           <div className="mx-auto h-10 w-10 animate-pulse rounded-full bg-primary-fixed" />
-          <p className="mt-4 text-sm font-semibold text-on-surface-variant">Loading editor...</p>
+          <p className="mt-4 text-sm font-semibold text-on-surface-variant">{copy.editor.loading}</p>
         </div>
       </main>
     );
@@ -252,10 +247,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface px-6">
         <div className="max-w-xl rounded-[2rem] bg-error-container p-8 text-on-error-container shadow-editorial">
-          <h1 className="font-[var(--font-headline)] text-3xl font-extrabold tracking-tight">Editor unavailable</h1>
-          <p className="mt-4 text-base leading-7">{error || "The requested resume could not be loaded."}</p>
+          <h1 className="font-[var(--font-headline)] text-3xl font-extrabold tracking-tight">{copy.editor.unavailableTitle}</h1>
+          <p className="mt-4 text-base leading-7">{error || copy.editor.unavailableDescription}</p>
           <Link href="/dashboard" className="mt-8 inline-flex rounded-2xl bg-on-error px-5 py-3 font-bold text-error transition hover:opacity-90">
-            Back to dashboard
+            {copy.editor.backToDashboard}
           </Link>
         </div>
       </main>
@@ -268,28 +263,28 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
         <div className="mx-auto flex max-w-[1800px] flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
             <Link href="/dashboard" className="text-sm font-semibold text-on-surface-variant transition hover:text-on-surface">
-              Back to dashboard
+              {copy.editor.backToDashboard}
             </Link>
-            <h1 className="mt-2 font-[var(--font-headline)] text-3xl font-extrabold tracking-tight text-on-surface">Edit resume</h1>
-            <p className="mt-1 text-sm text-on-surface-variant">{dirty ? "Unsaved changes" : "Everything up to date"}</p>
+            <h1 className="mt-2 font-[var(--font-headline)] text-3xl font-extrabold tracking-tight text-on-surface">{copy.editor.title}</h1>
+            <p className="mt-1 text-sm text-on-surface-variant">{dirty ? copy.editor.unsaved : copy.editor.upToDate}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-on-surface">{progress}% complete</div>
+            <div className="rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-on-surface">{progress}% {copy.editor.complete}</div>
             <button
               type="button"
               onClick={handleSave}
               disabled={saving}
               className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest disabled:opacity-60"
             >
-              {saving ? "Saving..." : "Save"}
+              {saving ? copy.common.saving : copy.common.save}
             </button>
             <button
               type="button"
               onClick={() => handlePrint()}
               className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95"
-              title="Use Save as PDF in your browser print dialog. Turn off browser headers and footers for the cleanest result."
+              title={copy.editor.exportHint}
             >
-              Export PDF
+              {copy.editor.exportPdf}
             </button>
           </div>
         </div>
@@ -311,16 +306,16 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             <button
               type="button"
               onClick={() => setMobileView("build")}
-              className={cn("rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] transition", mobileView === "build" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant")}
+              className={cn("rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] transition", mobileView === "build" ? "bg-surface-container-lowest text-primary shadow-sm" : "text-on-surface-variant")}
             >
-              Build
+              {copy.editor.build}
             </button>
             <button
               type="button"
               onClick={() => setMobileView("preview")}
-              className={cn("rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] transition", mobileView === "preview" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant")}
+              className={cn("rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] transition", mobileView === "preview" ? "bg-surface-container-lowest text-primary shadow-sm" : "text-on-surface-variant")}
             >
-              Preview
+              {copy.editor.preview}
             </button>
           </div>
         </div>
@@ -332,20 +327,20 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             {statusMessage ? <div className="rounded-2xl bg-primary-fixed px-4 py-3 text-sm text-on-primary-fixed-variant">{statusMessage}</div> : null}
             {error ? <div className="rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container">{error}</div> : null}
 
-            <SectionCard active={activeSection === "personal"} title="Resume settings" description="Choose the best structure for your target role, then fill in the real content you want recruiters to read.">
+            <SectionCard active={activeSection === "personal"} title={copy.editor.personal.title} description={copy.editor.personal.description}>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
-                  <FieldLabel>Resume title</FieldLabel>
-                  <input value={resume.title} onFocus={() => setActiveSection("personal")} onChange={(event) => updateTitle(event.target.value)} className={`${inputClass} mt-2`} placeholder="e.g. Product Designer Resume" />
+                  <FieldLabel>{copy.editor.personal.resumeTitle}</FieldLabel>
+                  <input value={resume.title} onFocus={() => setActiveSection("personal")} onChange={(event) => updateTitle(event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.resumeTitlePlaceholder} />
                 </div>
                 <div className="md:col-span-2">
-                  <FieldLabel>Template style</FieldLabel>
+                  <FieldLabel>{copy.editor.personal.templateStyle}</FieldLabel>
                   <div className="mt-3">
                     <TemplateSwitcher selectedTemplate={resume.templateId} onSelect={updateTemplate} />
                   </div>
                 </div>
                 <div>
-                  <FieldLabel>Industry focus</FieldLabel>
+                  <FieldLabel>{copy.editor.personal.industryFocus}</FieldLabel>
                   <select value={resume.industryFocus} onFocus={() => setActiveSection("personal")} onChange={(event) => updateIndustryFocus(event.target.value as ResumeDocument["industryFocus"])} className={`${inputClass} mt-2`}>
                     {industryFocusOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -356,7 +351,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                   <p className="mt-2 text-xs leading-5 text-on-surface-variant">{industryFocusOptions.find((option) => option.value === resume.industryFocus)?.note}</p>
                 </div>
                 <div>
-                  <FieldLabel>Career stage</FieldLabel>
+                  <FieldLabel>{copy.editor.personal.careerStage}</FieldLabel>
                   <select value={resume.careerStage} onFocus={() => setActiveSection("personal")} onChange={(event) => updateCareerStage(event.target.value as ResumeDocument["careerStage"])} className={`${inputClass} mt-2`}>
                     {careerStageOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -380,13 +375,13 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                       </div>
                     )}
                     <div className="min-w-[220px] flex-1">
-                      <div className="rounded-xl bg-surface-container-high px-4 py-3 text-sm font-semibold text-on-surface">Photo stays in this browser only</div>
+                      <div className="rounded-xl bg-surface-container-high px-4 py-3 text-sm font-semibold text-on-surface">{copy.editor.personal.photoBrowserOnly}</div>
                       <p className="mt-2 max-w-xl text-xs leading-5 text-on-surface-variant">
-                        Add a profile photo locally for this device. It will appear in the CV preview and export, but the image file is not uploaded to Firebase Storage.
+                        {copy.editor.personal.photoDescription}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-3">
                         <label className="cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary transition hover:opacity-95">
-                          {uploadingAvatar ? "Uploading..." : resume.avatarUrl ? "Replace photo" : "Upload photo"}
+                          {uploadingAvatar ? copy.editor.personal.uploading : resume.avatarUrl ? copy.editor.personal.replacePhoto : copy.editor.personal.uploadPhoto}
                           <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                         </label>
                         {resume.avatarUrl ? (
@@ -395,26 +390,26 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                             onClick={() => clearAvatar()}
                             className="rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-container-highest"
                           >
-                            Remove photo
+                            {copy.editor.personal.removePhoto}
                           </button>
                         ) : null}
                       </div>
                       <div className="mt-4">
-                        <FieldLabel>Photo frame</FieldLabel>
+                        <FieldLabel>{copy.editor.personal.photoFrame}</FieldLabel>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={() => updateAvatarFrame("square")}
                             className={cn("rounded-full px-4 py-2 text-sm font-semibold transition", resume.avatarFrame === "square" ? "bg-primary text-on-primary" : "bg-surface-container-high text-on-surface-variant")}
                           >
-                            Square
+                            {copy.editor.personal.square}
                           </button>
                           <button
                             type="button"
                             onClick={() => updateAvatarFrame("portrait")}
                             className={cn("rounded-full px-4 py-2 text-sm font-semibold transition", resume.avatarFrame === "portrait" ? "bg-primary text-on-primary" : "bg-surface-container-high text-on-surface-variant")}
                           >
-                            Portrait
+                            {copy.editor.personal.portrait}
                           </button>
                         </div>
                       </div>
@@ -422,291 +417,291 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                   </div>
                 </div>
                 <div>
-                  <FieldLabel>Full name</FieldLabel>
-                  <input value={resume.personal.fullName} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("fullName", event.target.value)} className={`${inputClass} mt-2`} placeholder="Jane Nguyen" />
+                  <FieldLabel>{copy.editor.personal.fullName}</FieldLabel>
+                  <input value={resume.personal.fullName} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("fullName", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.fullNamePlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>Professional title</FieldLabel>
-                  <input value={resume.personal.title} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("title", event.target.value)} className={`${inputClass} mt-2`} placeholder="Frontend Engineer" />
+                  <FieldLabel>{copy.editor.personal.professionalTitle}</FieldLabel>
+                  <input value={resume.personal.title} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("title", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.professionalTitlePlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>Email</FieldLabel>
-                  <input value={resume.personal.email} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("email", event.target.value)} className={`${inputClass} mt-2`} placeholder="name@email.com" />
+                  <FieldLabel>{copy.editor.personal.email}</FieldLabel>
+                  <input value={resume.personal.email} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("email", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.emailPlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>Phone</FieldLabel>
-                  <input value={resume.personal.phone} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("phone", event.target.value)} className={`${inputClass} mt-2`} placeholder="+84 9xx xxx xxx" />
+                  <FieldLabel>{copy.editor.personal.phone}</FieldLabel>
+                  <input value={resume.personal.phone} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("phone", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.phonePlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>Location</FieldLabel>
-                  <input value={resume.personal.location} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("location", event.target.value)} className={`${inputClass} mt-2`} placeholder="Ho Chi Minh City" />
+                  <FieldLabel>{copy.editor.personal.location}</FieldLabel>
+                  <input value={resume.personal.location} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("location", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.locationPlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>Website</FieldLabel>
-                  <input value={resume.personal.website} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("website", event.target.value)} className={`${inputClass} mt-2`} placeholder="portfolio.com" />
+                  <FieldLabel>{copy.editor.personal.website}</FieldLabel>
+                  <input value={resume.personal.website} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("website", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.websitePlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>LinkedIn</FieldLabel>
-                  <input value={resume.personal.linkedin} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("linkedin", event.target.value)} className={`${inputClass} mt-2`} placeholder="linkedin.com/in/yourname" />
+                  <FieldLabel>{copy.editor.personal.linkedin}</FieldLabel>
+                  <input value={resume.personal.linkedin} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("linkedin", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.linkedinPlaceholder} />
                 </div>
                 <div>
-                  <FieldLabel>GitHub</FieldLabel>
-                  <input value={resume.personal.github} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("github", event.target.value)} className={`${inputClass} mt-2`} placeholder="github.com/yourname" />
+                  <FieldLabel>{copy.editor.personal.github}</FieldLabel>
+                  <input value={resume.personal.github} onFocus={() => setActiveSection("personal")} onChange={(event) => updatePersonal("github", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.personal.githubPlaceholder} />
                 </div>
               </div>
             </SectionCard>
 
-            <SectionCard active={activeSection === "summary"} title="Professional summary" description={getSummaryHint(resume.industryFocus)}>
+            <SectionCard active={activeSection === "summary"} title={copy.editor.summary.title} description={getSummaryHint(resume.industryFocus, locale)}>
               <div>
-                <FieldLabel>Summary</FieldLabel>
+                <FieldLabel>{copy.editor.summary.label}</FieldLabel>
                 <textarea
                   value={resume.summary}
                   onFocus={() => setActiveSection("summary")}
                   onChange={(event) => updateSummary(event.target.value)}
                   className={`${textareaClass} mt-2`}
-                  placeholder="Summarize your strengths, experience and target role in 2-4 lines."
+                  placeholder={copy.editor.summary.placeholder}
                 />
               </div>
             </SectionCard>
 
-            <SectionCard active={activeSection === "skills"} title="Skills" description={getSkillsHint(resume.industryFocus)}>
+            <SectionCard active={activeSection === "skills"} title={copy.editor.skills.title} description={getSkillsHint(resume.industryFocus, locale)}>
               {resume.skillGroups.map((group) => (
                 <div key={group.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Group name</FieldLabel>
+                      <FieldLabel>{copy.editor.skills.groupName}</FieldLabel>
                       <input
                         value={group.name}
                         onFocus={() => setActiveSection("skills")}
                         onChange={(event) => updateSkillGroup(group.id, "name", event.target.value)}
                         className={`${inputClass} mt-2`}
-                        placeholder={resume.industryFocus === "it" ? "Languages" : "Core Skills"}
+                        placeholder={resume.industryFocus === "it" ? copy.editor.skills.groupNamePlaceholderIt : copy.editor.skills.groupNamePlaceholderDefault}
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Skills, one per line</FieldLabel>
+                      <FieldLabel>{copy.editor.skills.skillsList}</FieldLabel>
                       <textarea
                         value={group.skills.join("\n")}
                         onFocus={() => setActiveSection("skills")}
                         onChange={(event) => updateSkillGroupSkills(group.id, event.target.value)}
                         className={`${textareaClass} mt-2`}
-                        placeholder={resume.industryFocus === "it" ? "TypeScript\nReact\nNext.js" : "Stakeholder communication\nProcess improvement\nHiring coordination"}
+                        placeholder={resume.industryFocus === "it" ? copy.editor.skills.skillsPlaceholderIt : copy.editor.skills.skillsPlaceholderDefault}
                       />
                     </div>
                   </div>
                   <button type="button" onClick={() => removeSkillGroup(group.id)} className="mt-4 text-sm font-semibold text-error">
-                    Remove group
+                    {copy.editor.skills.removeGroup}
                   </button>
                 </div>
               ))}
               <button type="button" onClick={addSkillGroup} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add skill group
+                {copy.editor.skills.addGroup}
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "projects"} title="Projects" description="Use this section for standout work, especially if you are early-career, changing fields or targeting technical roles.">
+            <SectionCard active={activeSection === "projects"} title={copy.editor.projects.title} description={copy.editor.projects.description}>
               {resume.projects.map((project) => (
                 <div key={project.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Project name</FieldLabel>
-                      <input value={project.name} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "name", event.target.value)} className={`${inputClass} mt-2`} placeholder="Realtime analytics dashboard" />
+                      <FieldLabel>{copy.editor.projects.name}</FieldLabel>
+                      <input value={project.name} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "name", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.projects.namePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Role</FieldLabel>
-                      <input value={project.role} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "role", event.target.value)} className={`${inputClass} mt-2`} placeholder="Lead developer" />
+                      <FieldLabel>{copy.editor.projects.role}</FieldLabel>
+                      <input value={project.role} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "role", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.projects.rolePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Link</FieldLabel>
-                      <input value={project.link} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "link", event.target.value)} className={`${inputClass} mt-2`} placeholder="https://..." />
+                      <FieldLabel>{copy.editor.projects.link}</FieldLabel>
+                      <input value={project.link} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "link", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.projects.linkPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Start date</FieldLabel>
-                      <input value={project.startDate} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "startDate", event.target.value)} className={`${inputClass} mt-2`} placeholder="2025" />
+                      <FieldLabel>{copy.editor.projects.startDate}</FieldLabel>
+                      <input value={project.startDate} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "startDate", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.certifications.datePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>End date</FieldLabel>
-                      <input value={project.endDate} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "endDate", event.target.value)} className={`${inputClass} mt-2`} placeholder="2026" />
+                      <FieldLabel>{copy.editor.projects.endDate}</FieldLabel>
+                      <input value={project.endDate} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "endDate", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.projects.endDatePlaceholder} />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Description</FieldLabel>
-                      <textarea value={project.description} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder="Describe the scope, stack or result of the project in a few concise lines." />
+                      <FieldLabel>{copy.editor.projects.itemDescription}</FieldLabel>
+                      <textarea value={project.description} onFocus={() => setActiveSection("projects")} onChange={(event) => updateProject(project.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.projects.itemDescriptionPlaceholder} />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeProject(project.id)} className="mt-4 text-sm font-semibold text-error">Remove project</button>
+                  <button type="button" onClick={() => removeProject(project.id)} className="mt-4 text-sm font-semibold text-error">{copy.editor.projects.remove}</button>
                 </div>
               ))}
               <button type="button" onClick={addProject} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add project
+                {copy.editor.projects.add}
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "experience"} title="Work experience" description="List the roles that matter most, newest first. Keep bullets short and measurable.">
+            <SectionCard active={activeSection === "experience"} title={copy.editor.experience.title} description={copy.editor.experience.description}>
               {resume.experiences.map((item) => (
                 <div key={item.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Job title</FieldLabel>
-                      <input value={item.jobTitle} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "jobTitle", event.target.value)} className={`${inputClass} mt-2`} placeholder="Software Engineer" />
+                      <FieldLabel>{copy.editor.experience.jobTitle}</FieldLabel>
+                      <input value={item.jobTitle} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "jobTitle", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.experience.jobTitlePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Employer</FieldLabel>
-                      <input value={item.employer} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "employer", event.target.value)} className={`${inputClass} mt-2`} placeholder="Acme Corp" />
+                      <FieldLabel>{copy.editor.experience.employer}</FieldLabel>
+                      <input value={item.employer} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "employer", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.experience.employerPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Location</FieldLabel>
+                      <FieldLabel>{copy.editor.personal.location}</FieldLabel>
                       <input value={item.location} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "location", event.target.value)} className={`${inputClass} mt-2`} placeholder="Remote" />
                     </div>
                     <div>
-                      <FieldLabel>Start date</FieldLabel>
-                      <input value={item.startDate} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "startDate", event.target.value)} className={`${inputClass} mt-2`} placeholder="2024" />
+                      <FieldLabel>{copy.editor.projects.startDate}</FieldLabel>
+                      <input value={item.startDate} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "startDate", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.awards.datePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>End date</FieldLabel>
-                      <input value={item.endDate} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "endDate", event.target.value)} className={`${inputClass} mt-2`} placeholder="Present or 2026" />
+                      <FieldLabel>{copy.editor.projects.endDate}</FieldLabel>
+                      <input value={item.endDate} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "endDate", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.experience.endDatePlaceholder} />
                     </div>
                     <div className="md:col-span-2 flex items-center gap-3">
                       <input id={`current-${item.id}`} type="checkbox" checked={item.current} onChange={(event) => updateExperience(item.id, "current", event.target.checked)} />
-                      <label htmlFor={`current-${item.id}`} className="text-sm font-medium text-on-surface">Current role</label>
+                      <label htmlFor={`current-${item.id}`} className="text-sm font-medium text-on-surface">{copy.editor.experience.currentRole}</label>
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Context</FieldLabel>
-                      <textarea value={item.description} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder="Summarize the team, mission or scope of the role." />
+                      <FieldLabel>{copy.editor.experience.context}</FieldLabel>
+                      <textarea value={item.description} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperience(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.experience.contextPlaceholder} />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Bullets, one per line</FieldLabel>
-                      <textarea value={item.bullets.join("\n")} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperienceBullets(item.id, event.target.value)} className={`${textareaClass} mt-2`} placeholder="Improved conversion by 18% through funnel redesign\nReduced report turnaround time from 2 days to 4 hours" />
+                      <FieldLabel>{copy.editor.experience.bullets}</FieldLabel>
+                      <textarea value={item.bullets.join("\n")} onFocus={() => setActiveSection("experience")} onChange={(event) => updateExperienceBullets(item.id, event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.experience.bulletsPlaceholder} />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeExperience(item.id)} className="mt-4 text-sm font-semibold text-error">Remove entry</button>
+                  <button type="button" onClick={() => removeExperience(item.id)} className="mt-4 text-sm font-semibold text-error">{copy.editor.experience.remove}</button>
                 </div>
               ))}
               <button type="button" onClick={addExperience} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add another experience
+                {copy.editor.experience.add}
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "education"} title="Education" description="Move this section higher automatically by choosing an early-career stage in the profile settings.">
+            <SectionCard active={activeSection === "education"} title={copy.editor.education.title} description={copy.editor.education.description}>
               {resume.education.map((item) => (
                 <div key={item.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Degree</FieldLabel>
-                      <input value={item.degree} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "degree", event.target.value)} className={`${inputClass} mt-2`} placeholder="B.S. in Computer Science" />
+                      <FieldLabel>{copy.editor.education.degree}</FieldLabel>
+                      <input value={item.degree} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "degree", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.education.degreePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>School</FieldLabel>
-                      <input value={item.school} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "school", event.target.value)} className={`${inputClass} mt-2`} placeholder="University name" />
+                      <FieldLabel>{copy.editor.education.school}</FieldLabel>
+                      <input value={item.school} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "school", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.education.schoolPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Location</FieldLabel>
-                      <input value={item.location} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "location", event.target.value)} className={`${inputClass} mt-2`} placeholder="Hanoi" />
+                      <FieldLabel>{copy.editor.personal.location}</FieldLabel>
+                      <input value={item.location} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "location", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.education.locationPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Start date</FieldLabel>
-                      <input value={item.startDate} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "startDate", event.target.value)} className={`${inputClass} mt-2`} placeholder="2020" />
+                      <FieldLabel>{copy.editor.projects.startDate}</FieldLabel>
+                      <input value={item.startDate} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "startDate", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.education.startDatePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>End date</FieldLabel>
-                      <input value={item.endDate} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "endDate", event.target.value)} className={`${inputClass} mt-2`} placeholder="2024" />
+                      <FieldLabel>{copy.editor.projects.endDate}</FieldLabel>
+                      <input value={item.endDate} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "endDate", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.awards.datePlaceholder} />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Description</FieldLabel>
-                      <textarea value={item.description} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder="Relevant coursework, GPA, thesis, honors or exchange program details if useful." />
+                      <FieldLabel>{copy.editor.projects.itemDescription}</FieldLabel>
+                      <textarea value={item.description} onFocus={() => setActiveSection("education")} onChange={(event) => updateEducation(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.education.itemDescriptionPlaceholder} />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeEducation(item.id)} className="mt-4 text-sm font-semibold text-error">Remove entry</button>
+                  <button type="button" onClick={() => removeEducation(item.id)} className="mt-4 text-sm font-semibold text-error">{copy.editor.education.remove}</button>
                 </div>
               ))}
               <button type="button" onClick={addEducation} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add education
+                {copy.editor.education.add}
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "certifications"} title="Certifications" description="Use this for licenses, certificates or formal technical credentials.">
+            <SectionCard active={activeSection === "certifications"} title={copy.editor.certifications.title} description={copy.editor.certifications.description}>
               {resume.certifications.map((item) => (
                 <div key={item.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Certification name</FieldLabel>
-                      <input value={item.name} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "name", event.target.value)} className={`${inputClass} mt-2`} placeholder="AWS Certified Cloud Practitioner" />
+                      <FieldLabel>{copy.editor.certifications.name}</FieldLabel>
+                      <input value={item.name} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "name", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.certifications.namePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Issuer</FieldLabel>
-                      <input value={item.issuer} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "issuer", event.target.value)} className={`${inputClass} mt-2`} placeholder="Amazon Web Services" />
+                      <FieldLabel>{copy.editor.certifications.issuer}</FieldLabel>
+                      <input value={item.issuer} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "issuer", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.certifications.issuerPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Date</FieldLabel>
-                      <input value={item.date} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "date", event.target.value)} className={`${inputClass} mt-2`} placeholder="2025" />
+                      <FieldLabel>{copy.editor.certifications.date}</FieldLabel>
+                      <input value={item.date} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "date", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.certifications.datePlaceholder} />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Description</FieldLabel>
-                      <textarea value={item.description} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder="Optional note about scope, score or relevance." />
+                      <FieldLabel>{copy.editor.projects.itemDescription}</FieldLabel>
+                      <textarea value={item.description} onFocus={() => setActiveSection("certifications")} onChange={(event) => updateCertification(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.certifications.itemDescriptionPlaceholder} />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeCertification(item.id)} className="mt-4 text-sm font-semibold text-error">Remove certification</button>
+                  <button type="button" onClick={() => removeCertification(item.id)} className="mt-4 text-sm font-semibold text-error">{copy.editor.certifications.remove}</button>
                 </div>
               ))}
               <button type="button" onClick={addCertification} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add certification
+                {copy.editor.certifications.add}
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "awards"} title="Awards" description="Add scholarships, recognitions or competition results that reinforce credibility.">
+            <SectionCard active={activeSection === "awards"} title={copy.editor.awards.title} description={copy.editor.awards.description}>
               {resume.awards.map((item) => (
                 <div key={item.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Award title</FieldLabel>
-                      <input value={item.title} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "title", event.target.value)} className={`${inputClass} mt-2`} placeholder="Dean's List" />
+                      <FieldLabel>{copy.editor.awards.titleLabel}</FieldLabel>
+                      <input value={item.title} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "title", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.awards.titlePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Issuer</FieldLabel>
-                      <input value={item.issuer} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "issuer", event.target.value)} className={`${inputClass} mt-2`} placeholder="University or organization" />
+                      <FieldLabel>{copy.editor.certifications.issuer}</FieldLabel>
+                      <input value={item.issuer} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "issuer", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.awards.issuerPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Date</FieldLabel>
-                      <input value={item.date} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "date", event.target.value)} className={`${inputClass} mt-2`} placeholder="2024" />
+                      <FieldLabel>{copy.editor.certifications.date}</FieldLabel>
+                      <input value={item.date} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "date", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.awards.datePlaceholder} />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Description</FieldLabel>
-                      <textarea value={item.description} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder="Optional context about why you received it." />
+                      <FieldLabel>{copy.editor.projects.itemDescription}</FieldLabel>
+                      <textarea value={item.description} onFocus={() => setActiveSection("awards")} onChange={(event) => updateAward(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.awards.itemDescriptionPlaceholder} />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeAward(item.id)} className="mt-4 text-sm font-semibold text-error">Remove award</button>
+                  <button type="button" onClick={() => removeAward(item.id)} className="mt-4 text-sm font-semibold text-error">{copy.editor.awards.remove}</button>
                 </div>
               ))}
               <button type="button" onClick={addAward} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add award
+                {copy.editor.awards.add}
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "activities"} title="Activities" description="Use this for leadership, volunteering, clubs or speaking experience when it supports your target role.">
+            <SectionCard active={activeSection === "activities"} title={copy.editor.activities.title} description={copy.editor.activities.description}>
               {resume.activities.map((item) => (
                 <div key={item.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FieldLabel>Activity name</FieldLabel>
-                      <input value={item.name} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "name", event.target.value)} className={`${inputClass} mt-2`} placeholder="Volunteer mentor" />
+                      <FieldLabel>{copy.editor.activities.name}</FieldLabel>
+                      <input value={item.name} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "name", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.activities.namePlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Organization</FieldLabel>
-                      <input value={item.organization} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "organization", event.target.value)} className={`${inputClass} mt-2`} placeholder="Organization name" />
+                      <FieldLabel>{copy.editor.activities.organization}</FieldLabel>
+                      <input value={item.organization} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "organization", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.activities.organizationPlaceholder} />
                     </div>
                     <div>
-                      <FieldLabel>Date</FieldLabel>
-                      <input value={item.date} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "date", event.target.value)} className={`${inputClass} mt-2`} placeholder="2023-2025" />
+                      <FieldLabel>{copy.editor.certifications.date}</FieldLabel>
+                      <input value={item.date} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "date", event.target.value)} className={`${inputClass} mt-2`} placeholder={copy.editor.activities.datePlaceholder} />
                     </div>
                     <div className="md:col-span-2">
-                      <FieldLabel>Description</FieldLabel>
-                      <textarea value={item.description} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder="Describe the contribution or leadership impact in a concise way." />
+                      <FieldLabel>{copy.editor.projects.itemDescription}</FieldLabel>
+                      <textarea value={item.description} onFocus={() => setActiveSection("activities")} onChange={(event) => updateActivity(item.id, "description", event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.activities.itemDescriptionPlaceholder} />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeActivity(item.id)} className="mt-4 text-sm font-semibold text-error">Remove activity</button>
+                  <button type="button" onClick={() => removeActivity(item.id)} className="mt-4 text-sm font-semibold text-error">{copy.editor.activities.remove}</button>
                 </div>
               ))}
               <button type="button" onClick={addActivity} className="rounded-2xl border border-dashed border-outline-variant px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary">
-                Add activity
+                {copy.editor.activities.add}
               </button>
             </SectionCard>
           </div>
@@ -715,11 +710,11 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
         <section className={cn("print-shell bg-surface-dim/25 px-4 py-6 lg:px-6", mobileView === "build" ? "hidden lg:block" : "block")}>
           <div className="screen-only mx-auto mb-4 flex max-w-[960px] items-center justify-between rounded-[1.5rem] bg-surface-container-lowest px-5 py-4 shadow-sm">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.26em] text-primary">Live preview</div>
+              <div className="text-xs font-bold uppercase tracking-[0.26em] text-primary">{copy.editor.previewPanel.title}</div>
               <p className="mt-1 text-sm text-on-surface-variant">
                 {activeTemplate
-                  ? `${activeTemplate.name} • ${getIndustryFocusLabel(resume.industryFocus)} • ${activeTemplate.atsReadabilityLevel}`
-                  : "Changes on the left update this document immediately."}
+                  ? `${activeTemplate.name} • ${getIndustryFocusLabel(resume.industryFocus, locale)} • ${activeTemplate.atsReadabilityLevel}`
+                  : copy.editor.previewPanel.fallback}
               </p>
             </div>
             <div className="rounded-full bg-surface-container-high px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-on-surface-variant">
@@ -727,7 +722,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             </div>
           </div>
           <div className="screen-only mx-auto mb-4 max-w-[960px] text-right text-xs text-on-surface-variant">
-            Use your browser print dialog and turn off headers and footers for the cleanest PDF.
+            {copy.editor.previewPanel.printHint}
           </div>
           <div ref={printRef} className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
             <ResumeDocumentPreview resume={resume} />
@@ -737,6 +732,13 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     </main>
   );
 }
+
+
+
+
+
+
+
 
 
 

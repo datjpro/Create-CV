@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { useI18n } from "@/components/settings/use-i18n";
 
 function readSearch() {
   if (typeof window === "undefined") {
@@ -15,6 +16,7 @@ function readSearch() {
 
 export function PrivateRouteShell({ children }: { children: React.ReactNode }) {
   const { loading, user } = useAuth();
+  const { copy } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -30,7 +32,7 @@ export function PrivateRouteShell({ children }: { children: React.ReactNode }) {
       <main className="flex min-h-screen items-center justify-center bg-surface px-6">
         <div className="rounded-[2rem] bg-surface-container-low p-8 text-center shadow-editorial">
           <div className="mx-auto h-10 w-10 animate-pulse rounded-full bg-primary-fixed" />
-          <p className="mt-4 text-sm font-semibold text-on-surface-variant">Preparing your workspace...</p>
+          <p className="mt-4 text-sm font-semibold text-on-surface-variant">{copy.auth.privateLoading}</p>
         </div>
       </main>
     );
@@ -38,3 +40,4 @@ export function PrivateRouteShell({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+
