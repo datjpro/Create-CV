@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 
-import { useI18n } from "@/components/settings/use-i18n";
-import { formatUpdatedAt } from "@/lib/utils";
 import { TemplatePreview } from "@/components/marketing/template-preview";
+import { useI18n } from "@/components/settings/use-i18n";
+import { getLocalizedResumeTitle } from "@/lib/resume-content";
 import type { ResumeDocument } from "@/lib/types";
+import { formatUpdatedAt } from "@/lib/utils";
 
 export function ResumeCard({
   resume,
@@ -27,7 +28,7 @@ export function ResumeCard({
       <div className="p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-[var(--font-headline)] text-2xl font-bold tracking-tight text-on-surface">{resume.title}</h3>
+            <h3 className="font-[var(--font-headline)] text-2xl font-bold tracking-tight text-on-surface">{getLocalizedResumeTitle(resume)}</h3>
             <p className="mt-1 text-sm text-on-surface-variant">{copy.dashboard.resumeCard.editedOn} {formatUpdatedAt(resume.updatedAt, locale)}</p>
             <p className="mt-2 text-xs font-bold uppercase tracking-[0.24em] text-primary">{templateCopy.name}</p>
           </div>
