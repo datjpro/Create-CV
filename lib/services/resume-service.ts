@@ -210,9 +210,15 @@ function normalizeSkillGroups(skillGroups: SkillGroup[] | undefined, locale: Loc
 }
 
 function buildLegacyLocalizedContent(resume: LegacyResumeDocument, locale: Locale): ResumeLocalizedContent {
-  const legacyExperiences = resume.experiences.length > 0 ? resume.experiences : [{ id: createId("exp"), jobTitle: "", employer: "", location: "", startDate: "", endDate: "", current: false, description: "", bullets: [] }];
-  const legacyEducation = resume.education.length > 0 ? resume.education : [{ id: createId("edu"), degree: "", school: "", location: "", startDate: "", endDate: "", description: "" }];
-  const legacyProjects = resume.projects.length > 0 ? resume.projects : [{ id: createId("project"), name: "", role: "", startDate: "", endDate: "", description: "", link: "" }];
+  const resumeExperiences = resume.experiences ?? [];
+  const resumeEducation = resume.education ?? [];
+  const resumeProjects = resume.projects ?? [];
+  const resumeCertifications = resume.certifications ?? [];
+  const resumeAwards = resume.awards ?? [];
+  const resumeActivities = resume.activities ?? [];
+  const legacyExperiences = resumeExperiences.length > 0 ? resumeExperiences : [{ id: createId("exp"), jobTitle: "", employer: "", location: "", startDate: "", endDate: "", current: false, description: "", bullets: [] }];
+  const legacyEducation = resumeEducation.length > 0 ? resumeEducation : [{ id: createId("edu"), degree: "", school: "", location: "", startDate: "", endDate: "", description: "" }];
+  const legacyProjects = resumeProjects.length > 0 ? resumeProjects : [{ id: createId("project"), name: "", role: "", startDate: "", endDate: "", description: "", link: "" }];
 
   return {
     title: resume.title ?? (locale === "vi" ? "CV chua dat ten" : "Untitled Resume"),
@@ -244,19 +250,19 @@ function buildLegacyLocalizedContent(resume: LegacyResumeDocument, locale: Local
       role: item.role ?? "",
       description: item.description ?? ""
     })),
-    certifications: resume.certifications.map((item) => ({
+    certifications: resumeCertifications.map((item) => ({
       id: item.id,
       name: item.name ?? "",
       issuer: item.issuer ?? "",
       description: item.description ?? ""
     })),
-    awards: resume.awards.map((item) => ({
+    awards: resumeAwards.map((item) => ({
       id: item.id,
       title: item.title ?? "",
       issuer: item.issuer ?? "",
       description: item.description ?? ""
     })),
-    activities: resume.activities.map((item) => ({
+    activities: resumeActivities.map((item) => ({
       id: item.id,
       name: item.name ?? "",
       organization: item.organization ?? "",
