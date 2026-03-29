@@ -2,7 +2,8 @@
 "use client";
 
 import Link from "next/link";
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import Cropper from "react-easy-crop";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -20,7 +21,7 @@ import {
   getSummaryHint
 } from "@/lib/resume-metadata";
 import { getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
-import type { Locale, ResumeDocument, ResumeFormSection } from "@/lib/types";
+import type { AvatarFrame, AvatarTransform, Locale, ResumeDocument, ResumeFormSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useResumeEditorStore } from "@/store/resume-editor-store";
 
@@ -29,6 +30,72 @@ const sectionIds: ResumeFormSection[] = ["personal", "summary", "skills", "proje
 const inputClass =
   "w-full rounded-xl border-0 bg-surface-container-low px-4 py-3 text-sm text-on-surface outline-none ring-0 transition focus:bg-surface-container-high focus:shadow-sm";
 const textareaClass = `${inputClass} min-h-[120px] resize-y`;
+const avatarMinZoom = 1;
+const avatarMaxZoom = 2.5;
+const portraitAvatarAspect = 7 / 10;
+
+type CropPoint = {
+  x: number;
+  y: number;
+};
+
+type CropArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type CropSize = {
+  width: number;
+  height: number;
+};
+
+type CropMediaSize = CropSize & {
+  naturalWidth: number;
+  naturalHeight: number;
+};
+
+function clampPercent(value: number) {
+  return Math.min(100, Math.max(0, value));
+}
+
+function getAvatarAspect(frame: AvatarFrame) {
+  return frame === "portrait" ? portraitAvatarAspect : 1;
+}
+
+function getStoredAvatarCropArea(transform: AvatarTransform, mediaSize: CropMediaSize, cropSize: CropSize): CropArea {
+  const width = Math.min(100, ((cropSize.width / mediaSize.width) * 100) / transform.zoom);
+  const height = Math.min(100, ((cropSize.height / mediaSize.height) * 100) / transform.zoom);
+  const x = Math.min(100 - width, Math.max(0, transform.x - width / 2));
+  const y = Math.min(100 - height, Math.max(0, transform.y - height / 2));
+
+  return {
+    x,
+    y,
+    width,
+    height
+  };
+}
+
+function getAvatarTransformFromCropArea(area: CropArea) {
+  return {
+    x: clampPercent(area.x + area.width / 2),
+    y: clampPercent(area.y + area.height / 2)
+  };
+}
+
+function getInitialAvatarCropFromArea(croppedAreaPercentages: CropArea, mediaSize: CropMediaSize, cropSize: CropSize, minZoom: number, maxZoom: number) {
+  const zoom = Math.min(maxZoom, Math.max(minZoom, (cropSize.width / mediaSize.width) * (100 / croppedAreaPercentages.width)));
+
+  return {
+    crop: {
+      x: (zoom * mediaSize.width) / 2 - cropSize.width / 2 - mediaSize.width * zoom * (croppedAreaPercentages.x / 100),
+      y: (zoom * mediaSize.height) / 2 - cropSize.height / 2 - mediaSize.height * zoom * (croppedAreaPercentages.y / 100)
+    },
+    zoom
+  };
+}
 
 function SectionCard({
   active,
@@ -76,15 +143,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const { user } = useAuth();
   const { locale, copy } = useI18n();
   const printRef = useRef<HTMLDivElement | null>(null);
-  const dragStateRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    originX: number;
-    originY: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const avatarSourceKeyRef = useRef("");
+  const avatarRestoreKeyRef = useRef("");
   const resume = useResumeEditorStore((state) => state.resume);
   const dirty = useResumeEditorStore((state) => state.dirty);
   const activeSection = useResumeEditorStore((state) => state.activeSection);
@@ -133,6 +193,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [mobileView, setMobileView] = useState<"build" | "preview">("build");
+  const [avatarCrop, setAvatarCrop] = useState<CropPoint>({ x: 0, y: 0 });
+  const [avatarZoom, setAvatarZoom] = useState(defaultAvatarTransform.zoom);
+  const [avatarMediaSize, setAvatarMediaSize] = useState<CropMediaSize | null>(null);
+  const [avatarCropSize, setAvatarCropSize] = useState<CropSize | null>(null);
 
   const industryFocusOptions = useMemo(() => getIndustryFocusOptions(locale), [locale]);
   const careerStageOptions = useMemo(() => getCareerStageOptions(locale), [locale]);
@@ -202,6 +266,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const progress = useMemo(() => (resume ? getCompletionScore(resume) : 0), [resume]);
   const activeTemplate = resume ? copy.templateMeta[resume.templateId] : null;
   const activeContent = resume ? resume.content[resume.contentLocale] : null;
+  const avatarAspect = resume ? getAvatarAspect(resume.avatarFrame) : 1;
+  const avatarSourceKey = resume ? `${resume.id}:${resume.avatarFrame}:${resume.avatarUrl}` : "";
   const localeOptions = useMemo(
     () => [
       { value: "vi" as const, label: copy.editor.contentLocale.vi },
@@ -215,6 +281,78 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     documentTitle: printTitle ? `${printTitle.replace(/\s+/g, "-").toLowerCase()}` : "resume",
     pageStyle: "@page { size: A4; margin: 8mm; }"
   });
+
+  const restoreAvatarEditor = useCallback((transform: AvatarTransform) => {
+    if (!resume?.avatarUrl || !avatarMediaSize || !avatarCropSize) {
+      setAvatarCrop({ x: 0, y: 0 });
+      setAvatarZoom(transform.zoom);
+      return;
+    }
+
+    const storedArea = getStoredAvatarCropArea(transform, avatarMediaSize, avatarCropSize);
+    const { crop, zoom } = getInitialAvatarCropFromArea(storedArea, avatarMediaSize, avatarCropSize, avatarMinZoom, avatarMaxZoom);
+
+    setAvatarCrop(crop);
+    setAvatarZoom(zoom);
+  }, [avatarCropSize, avatarMediaSize, resume?.avatarUrl]);
+
+  useEffect(() => {
+    if (avatarSourceKeyRef.current === avatarSourceKey) {
+      return;
+    }
+
+    avatarSourceKeyRef.current = avatarSourceKey;
+    avatarRestoreKeyRef.current = "";
+
+    if (!resume?.avatarUrl) {
+      setAvatarCrop({ x: 0, y: 0 });
+      setAvatarZoom(defaultAvatarTransform.zoom);
+      setAvatarMediaSize(null);
+      setAvatarCropSize(null);
+      return;
+    }
+
+    setAvatarCrop({ x: 0, y: 0 });
+    setAvatarZoom(resume.avatarTransform.zoom);
+    setAvatarMediaSize(null);
+    setAvatarCropSize(null);
+  }, [avatarSourceKey, resume]);
+
+  useEffect(() => {
+    if (!resume?.avatarUrl || !avatarMediaSize || !avatarCropSize) {
+      return;
+    }
+
+    const nextRestoreKey = `${avatarSourceKey}:${avatarMediaSize.width}x${avatarMediaSize.height}:${avatarCropSize.width}x${avatarCropSize.height}`;
+    if (avatarRestoreKeyRef.current === nextRestoreKey) {
+      return;
+    }
+
+    avatarRestoreKeyRef.current = nextRestoreKey;
+    restoreAvatarEditor(resume.avatarTransform);
+  }, [avatarCropSize, avatarMediaSize, avatarSourceKey, resume, restoreAvatarEditor]);
+
+  function handleAvatarCropAreaChange(croppedArea: CropArea) {
+    updateAvatarTransform(getAvatarTransformFromCropArea(croppedArea));
+  }
+
+  function handleAvatarZoomChange(nextZoom: number) {
+    setAvatarZoom(nextZoom);
+    updateAvatarTransform({ zoom: nextZoom });
+  }
+
+  function handleResetAvatarPosition() {
+    updateAvatarTransform(defaultAvatarTransform);
+    restoreAvatarEditor(defaultAvatarTransform);
+  }
+
+  function handleClearAvatar() {
+    clearAvatar();
+    setAvatarCrop({ x: 0, y: 0 });
+    setAvatarZoom(defaultAvatarTransform.zoom);
+    setAvatarMediaSize(null);
+    setAvatarCropSize(null);
+  }
 
   async function handleSave() {
     if (!resume) {
@@ -251,6 +389,11 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     try {
       const avatarUrl = await uploadAvatar(user.uid, resume.id, file);
       setAvatarUrl(avatarUrl);
+      updateAvatarTransform(defaultAvatarTransform);
+      setAvatarCrop({ x: 0, y: 0 });
+      setAvatarZoom(defaultAvatarTransform.zoom);
+      setAvatarMediaSize(null);
+      setAvatarCropSize(null);
       setStatusMessage(copy.editor.photoStored);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : copy.editor.unavailableDescription);
@@ -267,47 +410,6 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
 
     copyLocaleContent(resume.contentLocale, targetLocale);
     setStatusMessage(targetLocale === "en" ? copy.editor.copiedToEn : copy.editor.copiedToVi);
-  }
-
-  function handleAvatarPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (!resume?.avatarUrl) {
-      return;
-    }
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    dragStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: resume.avatarTransform.x,
-      originY: resume.avatarTransform.y,
-      width: rect.width,
-      height: rect.height
-    };
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleAvatarPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    const dragState = dragStateRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const deltaX = event.clientX - dragState.startX;
-    const deltaY = event.clientY - dragState.startY;
-
-    updateAvatarTransform({
-      x: dragState.originX - (deltaX / dragState.width) * 100,
-      y: dragState.originY - (deltaY / dragState.height) * 100
-    });
-  }
-
-  function handleAvatarPointerEnd(event: React.PointerEvent<HTMLDivElement>) {
-    if (dragStateRef.current?.pointerId === event.pointerId) {
-      dragStateRef.current = null;
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
   }
 
   if (loading) {
@@ -440,8 +542,40 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                 <div className="md:col-span-2 rounded-[1.5rem] bg-surface-container-low p-4">
                   <div className="flex flex-wrap items-start gap-4">
                     <div className="space-y-3">
-                      <div className={cn("touch-none", resume.avatarUrl ? "cursor-grab active:cursor-grabbing" : "")} onPointerDown={handleAvatarPointerDown} onPointerMove={handleAvatarPointerMove} onPointerUp={handleAvatarPointerEnd} onPointerCancel={handleAvatarPointerEnd}>
-                        <ResumeAvatarFrame src={resume.avatarUrl} alt={activeContent.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={avatarFrameClass} fallbackText={activeContent.personal.fullName.slice(0, 1) || "A"} />
+                      <div className={cn("relative overflow-hidden bg-surface-container-high shadow-inner", avatarFrameClass)}>
+                        {resume.avatarUrl ? (
+                          <Cropper
+                            image={resume.avatarUrl}
+                            crop={avatarCrop}
+                            zoom={avatarZoom}
+                            aspect={avatarAspect}
+                            minZoom={avatarMinZoom}
+                            maxZoom={avatarMaxZoom}
+                            cropShape="rect"
+                            objectFit="cover"
+                            restrictPosition
+                            zoomWithScroll={false}
+                            onCropChange={setAvatarCrop}
+                            onCropAreaChange={handleAvatarCropAreaChange}
+                            onZoomChange={handleAvatarZoomChange}
+                            setMediaSize={(size) => setAvatarMediaSize(size)}
+                            setCropSize={(size) => setAvatarCropSize(size)}
+                            classes={{
+                              containerClassName: cn("!bg-surface-container-high", resume.avatarFrame === "portrait" ? "!rounded-[1.25rem]" : "!rounded-2xl"),
+                              cropAreaClassName: cn("!border-white/85 !shadow-[0_0_0_9999px_rgba(15,23,42,0.32)]", resume.avatarFrame === "portrait" ? "!rounded-[1.25rem]" : "!rounded-2xl")
+                            }}
+                            mediaProps={{ alt: activeContent.personal.fullName || "Profile photo" }}
+                          />
+                        ) : (
+                          <ResumeAvatarFrame
+                            src={resume.avatarUrl}
+                            alt={activeContent.personal.fullName || "Profile photo"}
+                            frame={resume.avatarFrame}
+                            transform={resume.avatarTransform}
+                            className={avatarFrameClass}
+                            fallbackText={activeContent.personal.fullName.slice(0, 1) || "A"}
+                          />
+                        )}
                       </div>
                       {resume.avatarUrl ? <p className="max-w-[220px] text-xs leading-5 text-on-surface-variant">{copy.editor.personal.photoZoomHint}</p> : null}
                     </div>
@@ -454,7 +588,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                           <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                         </label>
                         {resume.avatarUrl ? (
-                          <button type="button" onClick={() => clearAvatar()} className="rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-container-highest">
+                          <button type="button" onClick={handleClearAvatar} className="rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-container-highest">
                             {copy.editor.personal.removePhoto}
                           </button>
                         ) : null}
@@ -472,10 +606,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                       </div>
                       <div className="mt-4">
                         <FieldLabel>{copy.editor.personal.photoZoom}</FieldLabel>
-                        <input type="range" min={1} max={2.5} step={0.05} value={resume.avatarTransform.zoom} onChange={(event) => updateAvatarTransform({ zoom: Number(event.target.value) })} className="mt-3 w-full accent-primary" />
+                        <input type="range" min={1} max={2.5} step={0.05} value={avatarZoom} onChange={(event) => handleAvatarZoomChange(Number(event.target.value))} className="mt-3 w-full accent-primary" />
                         <div className="mt-2 flex items-center justify-between text-xs text-on-surface-variant">
-                          <span>{resume.avatarTransform.zoom.toFixed(2)}x</span>
-                          <button type="button" onClick={() => updateAvatarTransform(defaultAvatarTransform)} className="font-semibold text-primary">
+                          <span>{avatarZoom.toFixed(2)}x</span>
+                          <button type="button" onClick={handleResetAvatarPosition} className="font-semibold text-primary">
                             {copy.editor.personal.photoResetPosition}
                           </button>
                         </div>
