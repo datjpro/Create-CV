@@ -146,14 +146,49 @@ const previewLabels: Record<Locale, Record<ResumeContentSection, string>> = {
     activities: "ACTIVITIES"
   },
   vi: {
-    summary: "TOM TAT CHUYEN MON",
-    skills: "KY NANG",
-    projects: "DU AN",
-    experience: "KINH NGHIEM LAM VIEC",
-    education: "HOC VAN",
-    certifications: "CHUNG CHI",
-    awards: "GIAI THUONG",
-    activities: "HOAT DONG"
+    summary: "TÓM TẮT CHUYÊN MÔN",
+    skills: "KỸ NĂNG",
+    projects: "DỰ ÁN",
+    experience: "KINH NGHIỆM LÀM VIỆC",
+    education: "HỌC VẤN",
+    certifications: "CHỨNG CHỈ",
+    awards: "GIẢI THƯỞNG",
+    activities: "HOẠT ĐỘNG"
+  }
+};
+
+const previewFallbacks: Record<Locale, {
+  name: string;
+  title: string;
+  project: string;
+  role: string;
+  degree: string;
+  item: string;
+  school: string;
+  certification: string;
+  award: string;
+}> = {
+  en: {
+    name: "Your name",
+    title: "Professional title",
+    project: "Project",
+    role: "Role",
+    degree: "Degree",
+    item: "Item",
+    school: "School",
+    certification: "Certification",
+    award: "Award"
+  },
+  vi: {
+    name: "Họ và tên",
+    title: "Chức danh nghề nghiệp",
+    project: "Dự án",
+    role: "Vai trò",
+    degree: "Bằng cấp",
+    item: "Mục",
+    school: "Trường",
+    certification: "Chứng chỉ",
+    award: "Giải thưởng"
   }
 };
 
@@ -221,6 +256,7 @@ function buildResumeView(resume: ResumeDocument) {
     locale,
     content,
     labels: previewLabels[locale],
+    fallback: previewFallbacks[locale],
     experiences,
     education,
     projects,
@@ -276,8 +312,8 @@ function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }
 function ResumeIdentity({ view, theme }: { view: ResumeView; theme: PreviewTheme }) {
   return (
     <div className="min-w-0">
-      <h1 className={cn("font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight", theme.accentText)}>{view.content.personal.fullName || "Your name"}</h1>
-      <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{view.content.personal.title || "Professional title"}</p>
+      <h1 className={cn("font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight", theme.accentText)}>{view.content.personal.fullName || view.fallback.name}</h1>
+      <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{view.content.personal.title || view.fallback.title}</p>
       {renderInlineItems(view.contactItems, "mt-1.5 text-[10.5px] leading-[1.45]", theme)}
     </div>
   );
@@ -356,7 +392,7 @@ function ResumeSection({ resume, section, theme, view }: { resume: ResumeDocumen
           {view.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role)).map((project) => (
             <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}>
               <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-                <span>{project.name || "Project"}</span>
+                <span>{project.name || view.fallback.project}</span>
                 <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(project.startDate, project.endDate)}</span>
               </div>
               {renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-0.5 text-[11px] italic", theme)}
@@ -376,7 +412,7 @@ function ResumeSection({ resume, section, theme, view }: { resume: ResumeDocumen
           {view.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some(hasText)).map((item) => (
             <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
               <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-                <span>{item.jobTitle || "Role"}</span>
+                <span>{item.jobTitle || view.fallback.role}</span>
                 <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
               </div>
               <p className={cn("mt-0.5 text-[11px] italic", theme.subtleText)}>{[item.employer, item.location].filter(hasText).join(" | ")}</p>
@@ -396,7 +432,7 @@ function ResumeSection({ resume, section, theme, view }: { resume: ResumeDocumen
           {view.education.filter((item) => hasText(item.degree) || hasText(item.school)).map((item) => (
             <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
               <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-                <span>{item.degree || "Degree"}</span>
+                <span>{item.degree || view.fallback.degree}</span>
                 <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</span>
               </div>
               <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{[item.school, item.location].filter(hasText).join(" | ")}</p>
@@ -422,7 +458,7 @@ function ResumeSection({ resume, section, theme, view }: { resume: ResumeDocumen
         {items.filter((item) => hasText(item.title) || hasText(item.subtitle)).map((item) => (
           <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
             <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-              <span>{item.title || "Item"}</span>
+              <span>{item.title || view.fallback.item}</span>
               {item.date ? <span className={cn("shrink-0", theme.accentText)}>{item.date}</span> : null}
             </div>
             {item.subtitle ? <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{item.subtitle}</p> : null}
@@ -481,21 +517,21 @@ function DarkPortfolioLayout({ resume, theme, view }: { resume: ResumeDocument; 
           <div className="space-y-5">
             {resume.avatarUrl ? <ResumeAvatarFrame src={resume.avatarUrl} alt={view.content.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={theme.photoClass} fallbackText={view.content.personal.fullName.slice(0, 1) || "A"} /> : null}
             <div>
-              <h1 className="font-[var(--font-headline)] text-[26px] font-extrabold tracking-tight text-white">{view.content.personal.fullName || "Your name"}</h1>
-              <p className="mt-1 text-sm font-semibold text-white/80">{view.content.personal.title || "Professional title"}</p>
+              <h1 className="font-[var(--font-headline)] text-[26px] font-extrabold tracking-tight text-white">{view.content.personal.fullName || view.fallback.name}</h1>
+              <p className="mt-1 text-sm font-semibold text-white/80">{view.content.personal.title || view.fallback.title}</p>
               {renderInlineItems(view.contactItems, "mt-3 text-[10.5px] leading-5", theme)}
             </div>
             {hasText(view.content.summary) ? <SidebarCompactSection title={view.labels.summary} theme={theme}><p className="text-[10.5px] leading-[1.55] text-white/65">{view.content.summary}</p></SidebarCompactSection> : null}
-            {education.length > 0 ? <SidebarCompactSection title={view.labels.education} theme={theme}>{education.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.school || item.degree || "School"}</div><div>{item.degree}</div><div className="text-white/55">{formatDateRange(item.startDate, item.endDate)}</div></article>)}</SidebarCompactSection> : null}
-            {certifications.length > 0 ? <SidebarCompactSection title={view.labels.certifications} theme={theme}>{certifications.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.name || "Certification"}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection> : null}
-            {awards.length > 0 ? <SidebarCompactSection title={view.labels.awards} theme={theme}>{awards.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.title || "Award"}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection> : null}
+            {education.length > 0 ? <SidebarCompactSection title={view.labels.education} theme={theme}>{education.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.school || item.degree || view.fallback.school}</div><div>{item.degree}</div><div className="text-white/55">{formatDateRange(item.startDate, item.endDate)}</div></article>)}</SidebarCompactSection> : null}
+            {certifications.length > 0 ? <SidebarCompactSection title={view.labels.certifications} theme={theme}>{certifications.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.name || view.fallback.certification}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection> : null}
+            {awards.length > 0 ? <SidebarCompactSection title={view.labels.awards} theme={theme}>{awards.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.title || view.fallback.award}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection> : null}
             {view.allSkills.length > 0 ? <SidebarCompactSection title={getSkillSectionLabel(resume.industryFocus, view.locale).toUpperCase()} theme={theme}><div className="flex flex-wrap gap-1.5">{view.allSkills.slice(0, 18).map((skill) => <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>{skill}</span>)}</div></SidebarCompactSection> : null}
           </div>
         </aside>
         <section className="p-6">
           <div className="space-y-5">
-            {experiences.length > 0 ? <section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || "Role"}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section> : null}
-            {projects.length > 0 ? <section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || "Project"}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section> : null}
+            {experiences.length > 0 ? <section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section> : null}
+            {projects.length > 0 ? <section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || view.fallback.project}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section> : null}
           </div>
         </section>
       </div>
