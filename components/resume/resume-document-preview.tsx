@@ -1,7 +1,7 @@
 ﻿import { ResumeAvatarFrame } from "@/components/resume/resume-avatar-frame";
 import { getResumeContent, mergeLocalizedItems } from "@/lib/resume-content";
 import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
-import type { Locale, ResumeContentSection, ResumeDocument, TemplateId } from "@/lib/types";
+import type { Locale, ResumeContentSection, ResumeDocument, ResumeFormSection, TemplateId } from "@/lib/types";
 import { cn, formatDateRange } from "@/lib/utils";
 
 type InlineItem = {
@@ -309,6 +309,37 @@ function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }
   return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold", theme.heading)}>{label}</h2>;
 }
 
+function PreviewSectionSpotlight({
+  section,
+  activeSection,
+  theme,
+  children,
+  className
+}: {
+  section: ResumeFormSection;
+  activeSection?: ResumeFormSection;
+  theme: PreviewTheme;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const active = activeSection === section;
+
+  return (
+    <div
+      data-preview-section={section}
+      className={cn(
+        "scroll-my-24 rounded-[1.35rem] transition-all duration-300",
+        active && (theme.kind === "dark-portfolio"
+          ? "bg-white/8 ring-2 ring-white/15 shadow-[0_18px_36px_rgba(0,0,0,0.28)]"
+          : "bg-primary/10 ring-2 ring-primary/20 shadow-[0_18px_36px_rgba(15,23,42,0.10)]"),
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 function ResumeIdentity({ view, theme }: { view: ResumeView; theme: PreviewTheme }) {
   return (
     <div className="min-w-0">
@@ -319,128 +350,147 @@ function ResumeIdentity({ view, theme }: { view: ResumeView; theme: PreviewTheme
   );
 }
 
-function StandardResumeHeader({ resume, theme, view, showSummary }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; showSummary: boolean }) {
+function StandardResumeHeader({ resume, theme, view, showSummary, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; showSummary: boolean; activeSection?: ResumeFormSection }) {
   const photo = resume.avatarUrl ? (
     <ResumeAvatarFrame src={resume.avatarUrl} alt={view.content.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={theme.photoClass} fallbackText={view.content.personal.fullName.slice(0, 1) || "A"} imageClassName="border border-outline-variant/25" />
   ) : null;
 
   if (photo) {
     return (
-      <header className={cn("border-b pb-3", theme.divider)}>
-        <div className="grid items-start gap-x-4 gap-y-2 [grid-template-columns:minmax(0,1fr)_144px]">
-          <ResumeIdentity view={view} theme={theme} />
-          <div className="row-span-2 flex justify-end">{photo}</div>
-          {showSummary ? (
-            <section className={cn("min-w-0", theme.summaryCard)}>
-              <SectionHeading label={view.labels.summary} theme={theme} />
-              <p className={cn("pr-1 text-[11px] leading-[1.42]", theme.subtleText)}>{view.content.summary}</p>
-            </section>
-          ) : null}
-        </div>
-      </header>
+      <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
+        <header className={cn("border-b pb-3", theme.divider)}>
+          <div className="grid items-start gap-x-4 gap-y-2 [grid-template-columns:minmax(0,1fr)_144px]">
+            <ResumeIdentity view={view} theme={theme} />
+            <div className="row-span-2 flex justify-end">{photo}</div>
+            {showSummary ? (
+              <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} className="min-w-0">
+                <section className={theme.summaryCard}>
+                  <SectionHeading label={view.labels.summary} theme={theme} />
+                  <p className={cn("pr-1 text-[11px] leading-[1.42]", theme.subtleText)}>{view.content.summary}</p>
+                </section>
+              </PreviewSectionSpotlight>
+            ) : null}
+          </div>
+        </header>
+      </PreviewSectionSpotlight>
     );
   }
 
   return (
-    <header className={cn("border-b pb-3", theme.divider)}>
-      <ResumeIdentity view={view} theme={theme} />
-      {showSummary ? (
-        <section className={cn("mt-3 min-w-0", theme.summaryCard)}>
-          <SectionHeading label={view.labels.summary} theme={theme} />
-          <p className={cn("text-[11px] leading-[1.42]", theme.subtleText)}>{view.content.summary}</p>
-        </section>
-      ) : null}
-    </header>
+    <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
+      <header className={cn("border-b pb-3", theme.divider)}>
+        <ResumeIdentity view={view} theme={theme} />
+        {showSummary ? (
+          <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} className="mt-3 min-w-0">
+            <section className={theme.summaryCard}>
+              <SectionHeading label={view.labels.summary} theme={theme} />
+              <p className={cn("text-[11px] leading-[1.42]", theme.subtleText)}>{view.content.summary}</p>
+            </section>
+          </PreviewSectionSpotlight>
+        ) : null}
+      </header>
+    </PreviewSectionSpotlight>
   );
 }
 
-function ResumeSection({ resume, section, theme, view }: { resume: ResumeDocument; section: ResumeContentSection; theme: PreviewTheme; view: ResumeView }) {
+function ResumeSection({ resume, section, theme, view, activeSection }: { resume: ResumeDocument; section: ResumeContentSection; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
   if (!hasRenderableContent(view, section)) {
     return null;
   }
 
   if (section === "summary") {
     return (
-      <section className={theme.itemCard}>
-        <SectionHeading label={view.labels.summary} theme={theme} />
-        <p className={cn("text-[11px] leading-[1.45]", theme.subtleText)}>{view.content.summary}</p>
-      </section>
+      <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme}>
+        <section className={theme.itemCard}>
+          <SectionHeading label={view.labels.summary} theme={theme} />
+          <p className={cn("text-[11px] leading-[1.45]", theme.subtleText)}>{view.content.summary}</p>
+        </section>
+      </PreviewSectionSpotlight>
     );
   }
 
   if (section === "skills") {
     return (
-      <section className={theme.itemCard}>
-        <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
-        <div className="space-y-2">
-          {view.skills.filter((group) => hasText(group.name) || group.skills.some(hasText)).map((group) => (
-            <div key={group.id} className="text-[11px] leading-[1.4] text-on-surface">
-              <span className={cn("font-semibold", theme.accentText)}>{group.name || "Skill Group"}: </span>
-              <span className={theme.subtleText}>{group.skills.filter(hasText).join(" | ")}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme}>
+        <section className={theme.itemCard}>
+          <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
+          <div className="space-y-2">
+            {view.skills.filter((group) => hasText(group.name) || group.skills.some(hasText)).map((group) => (
+              <div key={group.id} className="text-[11px] leading-[1.4] text-on-surface">
+                <span className={cn("font-semibold", theme.accentText)}>{group.name || "Skill Group"}: </span>
+                <span className={theme.subtleText}>{group.skills.filter(hasText).join(" | ")}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </PreviewSectionSpotlight>
     );
   }
 
   if (section === "projects") {
     return (
-      <section>
-        <SectionHeading label={view.labels.projects} theme={theme} />
-        <div className="space-y-2.5">
-          {view.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role)).map((project) => (
-            <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}>
-              <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-                <span>{project.name || view.fallback.project}</span>
-                <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(project.startDate, project.endDate)}</span>
-              </div>
-              {renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-0.5 text-[11px] italic", theme)}
-              {project.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{project.description}</p> : null}
-            </article>
-          ))}
-        </div>
-      </section>
+      <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme}>
+        <section>
+          <SectionHeading label={view.labels.projects} theme={theme} />
+          <div className="space-y-2.5">
+            {view.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role)).map((project) => (
+              <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}>
+                <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
+                  <span>{project.name || view.fallback.project}</span>
+                  <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(project.startDate, project.endDate)}</span>
+                </div>
+                {renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-0.5 text-[11px] italic", theme)}
+                {project.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{project.description}</p> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      </PreviewSectionSpotlight>
     );
   }
 
   if (section === "experience") {
     return (
-      <section>
-        <SectionHeading label={view.labels.experience} theme={theme} />
-        <div className="space-y-2.5">
-          {view.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some(hasText)).map((item) => (
-            <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
-              <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-                <span>{item.jobTitle || view.fallback.role}</span>
-                <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
-              </div>
-              <p className={cn("mt-0.5 text-[11px] italic", theme.subtleText)}>{[item.employer, item.location].filter(hasText).join(" | ")}</p>
-              {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{item.description}</p> : null}
-              {item.bullets.filter(hasText).length > 0 ? <ul className={cn("mt-1 list-disc space-y-0.5 pl-4 text-[11px] leading-[1.4]", theme.subtleText)}>{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
-            </article>
-          ))}
-        </div>
-      </section>
+      <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme}>
+        <section>
+          <SectionHeading label={view.labels.experience} theme={theme} />
+          <div className="space-y-2.5">
+            {view.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some(hasText)).map((item) => (
+              <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
+                <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
+                  <span>{item.jobTitle || view.fallback.role}</span>
+                  <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate, item.current)}</span>
+                </div>
+                <p className={cn("mt-0.5 text-[11px] italic", theme.subtleText)}>{[item.employer, item.location].filter(hasText).join(" | ")}</p>
+                {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.45]", theme.subtleText)}>{item.description}</p> : null}
+                {item.bullets.filter(hasText).length > 0 ? <ul className={cn("mt-1 list-disc space-y-0.5 pl-4 text-[11px] leading-[1.4]", theme.subtleText)}>{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      </PreviewSectionSpotlight>
     );
   }
+
   if (section === "education") {
     return (
-      <section>
-        <SectionHeading label={view.labels.education} theme={theme} />
-        <div className="space-y-2">
-          {view.education.filter((item) => hasText(item.degree) || hasText(item.school)).map((item) => (
-            <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
-              <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-                <span>{item.degree || view.fallback.degree}</span>
-                <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</span>
-              </div>
-              <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{[item.school, item.location].filter(hasText).join(" | ")}</p>
-              {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.4]", theme.subtleText)}>{item.description}</p> : null}
-            </article>
-          ))}
-        </div>
-      </section>
+      <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme}>
+        <section>
+          <SectionHeading label={view.labels.education} theme={theme} />
+          <div className="space-y-2">
+            {view.education.filter((item) => hasText(item.degree) || hasText(item.school)).map((item) => (
+              <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
+                <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
+                  <span>{item.degree || view.fallback.degree}</span>
+                  <span className={cn("shrink-0", theme.accentText)}>{formatDateRange(item.startDate, item.endDate)}</span>
+                </div>
+                <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{[item.school, item.location].filter(hasText).join(" | ")}</p>
+                {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.4]", theme.subtleText)}>{item.description}</p> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      </PreviewSectionSpotlight>
     );
   }
 
@@ -452,34 +502,36 @@ function ResumeSection({ resume, section, theme, view }: { resume: ResumeDocumen
         : view.activities.map((item) => ({ id: item.id, title: item.name, subtitle: item.organization, date: item.date, description: item.description }));
 
   return (
-    <section>
-      <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
-      <div className="space-y-2">
-        {items.filter((item) => hasText(item.title) || hasText(item.subtitle)).map((item) => (
-          <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
-            <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
-              <span>{item.title || view.fallback.item}</span>
-              {item.date ? <span className={cn("shrink-0", theme.accentText)}>{item.date}</span> : null}
-            </div>
-            {item.subtitle ? <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{item.subtitle}</p> : null}
-            {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.4]", theme.subtleText)}>{item.description}</p> : null}
-          </article>
-        ))}
-      </div>
-    </section>
+    <PreviewSectionSpotlight section={section} activeSection={activeSection} theme={theme}>
+      <section>
+        <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
+        <div className="space-y-2">
+          {items.filter((item) => hasText(item.title) || hasText(item.subtitle)).map((item) => (
+            <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
+              <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
+                <span>{item.title || view.fallback.item}</span>
+                {item.date ? <span className={cn("shrink-0", theme.accentText)}>{item.date}</span> : null}
+              </div>
+              {item.subtitle ? <p className={cn("mt-0.5 text-[11px]", theme.subtleText)}>{item.subtitle}</p> : null}
+              {item.description ? <p className={cn("mt-1 text-[11px] leading-[1.4]", theme.subtleText)}>{item.description}</p> : null}
+            </article>
+          ))}
+        </div>
+      </section>
+    </PreviewSectionSpotlight>
   );
 }
 
-function StandardResumeLayout({ resume, theme, view }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView }) {
+function StandardResumeLayout({ resume, theme, view, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(view, section));
   const showSummary = orderedSections.includes("summary");
   const bodySections = orderedSections.filter((section) => section !== "summary");
 
   return (
     <div className={theme.shell}>
-      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={showSummary} />
+      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={showSummary} activeSection={activeSection} />
       <div className={cn(theme.bodySpacing, theme.sectionSpacing)}>
-        {bodySections.map((section) => <ResumeSection key={section} resume={resume} section={section} theme={theme} view={view} />)}
+        {bodySections.map((section) => <ResumeSection key={section} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} />)}
       </div>
       {theme.showSkillBand && view.allSkills.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-1.5 border-t border-primary/15 pt-2.5">
@@ -503,7 +555,7 @@ function SidebarCompactSection({ title, children, theme }: { title: string; chil
   );
 }
 
-function DarkPortfolioLayout({ resume, theme, view }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView }) {
+function DarkPortfolioLayout({ resume, theme, view, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
   const experiences = view.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some(hasText));
   const projects = view.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role));
   const education = view.education.filter((item) => hasText(item.degree) || hasText(item.school));
@@ -515,23 +567,27 @@ function DarkPortfolioLayout({ resume, theme, view }: { resume: ResumeDocument; 
       <div className="grid min-h-full [grid-template-columns:250px_minmax(0,1fr)]">
         <aside className="border-r border-white/10 p-6">
           <div className="space-y-5">
-            {resume.avatarUrl ? <ResumeAvatarFrame src={resume.avatarUrl} alt={view.content.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={theme.photoClass} fallbackText={view.content.personal.fullName.slice(0, 1) || "A"} /> : null}
-            <div>
-              <h1 className="font-[var(--font-headline)] text-[26px] font-extrabold tracking-tight text-white">{view.content.personal.fullName || view.fallback.name}</h1>
-              <p className="mt-1 text-sm font-semibold text-white/80">{view.content.personal.title || view.fallback.title}</p>
-              {renderInlineItems(view.contactItems, "mt-3 text-[10.5px] leading-5", theme)}
-            </div>
-            {hasText(view.content.summary) ? <SidebarCompactSection title={view.labels.summary} theme={theme}><p className="text-[10.5px] leading-[1.55] text-white/65">{view.content.summary}</p></SidebarCompactSection> : null}
-            {education.length > 0 ? <SidebarCompactSection title={view.labels.education} theme={theme}>{education.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.school || item.degree || view.fallback.school}</div><div>{item.degree}</div><div className="text-white/55">{formatDateRange(item.startDate, item.endDate)}</div></article>)}</SidebarCompactSection> : null}
-            {certifications.length > 0 ? <SidebarCompactSection title={view.labels.certifications} theme={theme}>{certifications.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.name || view.fallback.certification}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection> : null}
-            {awards.length > 0 ? <SidebarCompactSection title={view.labels.awards} theme={theme}>{awards.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.title || view.fallback.award}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection> : null}
-            {view.allSkills.length > 0 ? <SidebarCompactSection title={getSkillSectionLabel(resume.industryFocus, view.locale).toUpperCase()} theme={theme}><div className="flex flex-wrap gap-1.5">{view.allSkills.slice(0, 18).map((skill) => <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>{skill}</span>)}</div></SidebarCompactSection> : null}
+            <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
+              <>
+                {resume.avatarUrl ? <ResumeAvatarFrame src={resume.avatarUrl} alt={view.content.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={theme.photoClass} fallbackText={view.content.personal.fullName.slice(0, 1) || "A"} /> : null}
+                <div>
+                  <h1 className="font-[var(--font-headline)] text-[26px] font-extrabold tracking-tight text-white">{view.content.personal.fullName || view.fallback.name}</h1>
+                  <p className="mt-1 text-sm font-semibold text-white/80">{view.content.personal.title || view.fallback.title}</p>
+                  {renderInlineItems(view.contactItems, "mt-3 text-[10.5px] leading-5", theme)}
+                </div>
+              </>
+            </PreviewSectionSpotlight>
+            {hasText(view.content.summary) ? <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.summary} theme={theme}><p className="text-[10.5px] leading-[1.55] text-white/65">{view.content.summary}</p></SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {education.length > 0 ? <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.education} theme={theme}>{education.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.school || item.degree || view.fallback.school}</div><div>{item.degree}</div><div className="text-white/55">{formatDateRange(item.startDate, item.endDate)}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {certifications.length > 0 ? <PreviewSectionSpotlight section="certifications" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.certifications} theme={theme}>{certifications.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.name || view.fallback.certification}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {awards.length > 0 ? <PreviewSectionSpotlight section="awards" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.awards} theme={theme}>{awards.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.title || view.fallback.award}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {view.allSkills.length > 0 ? <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme}><SidebarCompactSection title={getSkillSectionLabel(resume.industryFocus, view.locale).toUpperCase()} theme={theme}><div className="flex flex-wrap gap-1.5">{view.allSkills.slice(0, 18).map((skill) => <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>{skill}</span>)}</div></SidebarCompactSection></PreviewSectionSpotlight> : null}
           </div>
         </aside>
         <section className="p-6">
           <div className="space-y-5">
-            {experiences.length > 0 ? <section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section> : null}
-            {projects.length > 0 ? <section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || view.fallback.project}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section> : null}
+            {experiences.length > 0 ? <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme}><section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section></PreviewSectionSpotlight> : null}
+            {projects.length > 0 ? <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme}><section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || view.fallback.project}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section></PreviewSectionSpotlight> : null}
           </div>
         </section>
       </div>
@@ -539,38 +595,38 @@ function DarkPortfolioLayout({ resume, theme, view }: { resume: ResumeDocument; 
   );
 }
 
-function ModernColumnsLayout({ resume, theme, view }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView }) {
+function ModernColumnsLayout({ resume, theme, view, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(view, section));
   const leftSections = orderedSections.filter((section) => ["summary", "skills", "education", "certifications", "awards", "activities"].includes(section));
   const rightSections = orderedSections.filter((section) => ["experience", "projects"].includes(section));
 
   return (
     <div className={theme.shell}>
-      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={false} />
+      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={false} activeSection={activeSection} />
       <div className={cn(theme.bodySpacing, "grid gap-5 [grid-template-columns:0.92fr_1.28fr]")}>
         <div className={cn("space-y-3 rounded-[1.5rem] bg-surface-container-low p-4", theme.divider)}>
-          {leftSections.map((section) => <ResumeSection key={`left-${section}`} resume={resume} section={section} theme={theme} view={view} />)}
+          {leftSections.map((section) => <ResumeSection key={`left-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} />)}
         </div>
         <div className={theme.sectionSpacing}>
-          {rightSections.map((section) => <ResumeSection key={`right-${section}`} resume={resume} section={section} theme={theme} view={view} />)}
+          {rightSections.map((section) => <ResumeSection key={`right-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} />)}
         </div>
       </div>
     </div>
   );
 }
 
-export function ResumeDocumentPreview({ resume }: { resume: ResumeDocument }) {
+export function ResumeDocumentPreview({ resume, activeSection }: { resume: ResumeDocument; activeSection?: ResumeFormSection }) {
   const theme = previewThemes[resume.templateId];
   const view = buildResumeView(resume);
 
   if (theme.kind === "dark-portfolio") {
-    return <DarkPortfolioLayout resume={resume} theme={theme} view={view} />;
+    return <DarkPortfolioLayout resume={resume} theme={theme} view={view} activeSection={activeSection} />;
   }
 
   if (theme.kind === "modern-columns") {
-    return <ModernColumnsLayout resume={resume} theme={theme} view={view} />;
+    return <ModernColumnsLayout resume={resume} theme={theme} view={view} activeSection={activeSection} />;
   }
 
-  return <StandardResumeLayout resume={resume} theme={theme} view={view} />;
+  return <StandardResumeLayout resume={resume} theme={theme} view={view} activeSection={activeSection} />;
 }
 

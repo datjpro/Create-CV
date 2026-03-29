@@ -143,6 +143,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const { user } = useAuth();
   const { locale, copy } = useI18n();
   const printRef = useRef<HTMLDivElement | null>(null);
+  const previewPanelRef = useRef<HTMLDivElement | null>(null);
   const avatarSourceKeyRef = useRef("");
   const avatarRestoreKeyRef = useRef("");
   const resume = useResumeEditorStore((state) => state.resume);
@@ -262,6 +263,21 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     const timer = window.setTimeout(() => setStatusMessage(""), 2500);
     return () => window.clearTimeout(timer);
   }, [statusMessage]);
+
+  useEffect(() => {
+    const container = previewPanelRef.current;
+    if (!container) {
+      return;
+    }
+
+    const target = container.querySelector(`[data-preview-section="${activeSection}"]`);
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const nextTop = Math.max(0, target.offsetTop - container.clientHeight / 2 + target.clientHeight / 2);
+    container.scrollTo({ top: nextTop, behavior: "smooth" });
+  }, [activeSection, mobileView, resume?.contentLocale, resume?.id, resume?.templateId]);
 
   const progress = useMemo(() => (resume ? getCompletionScore(resume) : 0), [resume]);
   const activeTemplate = resume ? copy.templateMeta[resume.templateId] : null;
@@ -906,7 +922,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
           </div>
         </section>
 
-        <section className={cn("print-shell bg-surface-dim/25 px-4 py-6 lg:px-6", mobileView === "build" ? "hidden lg:block" : "block")}>
+        <section className={cn("print-shell bg-surface-dim/25 px-4 py-6 lg:sticky lg:top-[124px] lg:self-start lg:px-6", mobileView === "build" ? "hidden lg:block" : "block")}>
           <div className="screen-only mx-auto mb-4 flex max-w-[960px] items-center justify-between rounded-[1.5rem] bg-surface-container-lowest px-5 py-4 shadow-sm">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.26em] text-primary">{copy.editor.previewPanel.title}</div>
@@ -923,8 +939,10 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
           <div className="screen-only mx-auto mb-4 max-w-[960px] text-right text-xs text-on-surface-variant">
             {copy.editor.previewPanel.printHint}
           </div>
-          <div ref={printRef} className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
-            <ResumeDocumentPreview resume={resume} />
+          <div ref={previewPanelRef} className="screen-only mx-auto max-h-[calc(100vh-240px)] max-w-[980px] overflow-y-auto pr-2">
+            <div ref={printRef} className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
+              <ResumeDocumentPreview resume={resume} activeSection={activeSection} />
+            </div>
           </div>
         </section>
       </div>
