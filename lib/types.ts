@@ -1,4 +1,4 @@
-export type TemplateId =
+﻿export type TemplateId =
   | "minimal"
   | "professional"
   | "creative"
@@ -37,7 +37,152 @@ export type AppUser = {
 
 export type ResumeStatus = "draft" | "ready";
 
-export type PersonalInfo = {
+export type AvatarTransform = {
+  zoom: number;
+  x: number;
+  y: number;
+};
+
+export type ResumeContentLocale = Locale;
+
+export type ResumeSharedPersonalInfo = {
+  email: string;
+  phone: string;
+  website: string;
+  linkedin: string;
+  github: string;
+};
+
+export type ResumeLocalizedPersonalInfo = {
+  fullName: string;
+  title: string;
+  location: string;
+};
+
+export type ExperienceItem = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+};
+
+export type ResumeLocalizedExperienceItem = {
+  id: string;
+  jobTitle: string;
+  employer: string;
+  location: string;
+  description: string;
+  bullets: string[];
+};
+
+export type EducationItem = {
+  id: string;
+  startDate: string;
+  endDate: string;
+};
+
+export type ResumeLocalizedEducationItem = {
+  id: string;
+  degree: string;
+  school: string;
+  location: string;
+  description: string;
+};
+
+export type ProjectItem = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  link: string;
+};
+
+export type ResumeLocalizedProjectItem = {
+  id: string;
+  name: string;
+  role: string;
+  description: string;
+};
+
+export type SkillGroup = {
+  id: string;
+  name: string;
+  skills: string[];
+};
+
+export type CertificationItem = {
+  id: string;
+  date: string;
+};
+
+export type ResumeLocalizedCertificationItem = {
+  id: string;
+  name: string;
+  issuer: string;
+  description: string;
+};
+
+export type AwardItem = {
+  id: string;
+  date: string;
+};
+
+export type ResumeLocalizedAwardItem = {
+  id: string;
+  title: string;
+  issuer: string;
+  description: string;
+};
+
+export type ActivityItem = {
+  id: string;
+  date: string;
+};
+
+export type ResumeLocalizedActivityItem = {
+  id: string;
+  name: string;
+  organization: string;
+  description: string;
+};
+
+export type ResumeLocalizedContent = {
+  title: string;
+  personal: ResumeLocalizedPersonalInfo;
+  summary: string;
+  experiences: ResumeLocalizedExperienceItem[];
+  education: ResumeLocalizedEducationItem[];
+  skillGroups: SkillGroup[];
+  projects: ResumeLocalizedProjectItem[];
+  certifications: ResumeLocalizedCertificationItem[];
+  awards: ResumeLocalizedAwardItem[];
+  activities: ResumeLocalizedActivityItem[];
+};
+
+export type ResumeDocument = {
+  id: string;
+  userId: string;
+  title: string;
+  status: ResumeStatus;
+  templateId: TemplateId;
+  industryFocus: IndustryFocus;
+  careerStage: CareerStage;
+  contentLocale: ResumeContentLocale;
+  avatarUrl: string;
+  avatarFrame: AvatarFrame;
+  avatarTransform: AvatarTransform;
+  personal: ResumeSharedPersonalInfo;
+  content: Record<Locale, ResumeLocalizedContent>;
+  experiences: ExperienceItem[];
+  education: EducationItem[];
+  projects: ProjectItem[];
+  certifications: CertificationItem[];
+  awards: AwardItem[];
+  activities: ActivityItem[];
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type LegacyPersonalInfo = {
   fullName: string;
   title: string;
   email: string;
@@ -48,7 +193,7 @@ export type PersonalInfo = {
   github: string;
 };
 
-export type ExperienceItem = {
+export type LegacyExperienceItem = {
   id: string;
   jobTitle: string;
   employer: string;
@@ -60,7 +205,7 @@ export type ExperienceItem = {
   bullets: string[];
 };
 
-export type EducationItem = {
+export type LegacyEducationItem = {
   id: string;
   degree: string;
   school: string;
@@ -70,7 +215,7 @@ export type EducationItem = {
   description: string;
 };
 
-export type ProjectItem = {
+export type LegacyProjectItem = {
   id: string;
   name: string;
   role: string;
@@ -80,13 +225,7 @@ export type ProjectItem = {
   link: string;
 };
 
-export type SkillGroup = {
-  id: string;
-  name: string;
-  skills: string[];
-};
-
-export type CertificationItem = {
+export type LegacyCertificationItem = {
   id: string;
   name: string;
   issuer: string;
@@ -94,7 +233,7 @@ export type CertificationItem = {
   description: string;
 };
 
-export type AwardItem = {
+export type LegacyAwardItem = {
   id: string;
   title: string;
   issuer: string;
@@ -102,7 +241,7 @@ export type AwardItem = {
   description: string;
 };
 
-export type ActivityItem = {
+export type LegacyActivityItem = {
   id: string;
   name: string;
   organization: string;
@@ -110,7 +249,7 @@ export type ActivityItem = {
   description: string;
 };
 
-export type ResumeDocument = {
+export type LegacyResumeDocument = {
   id: string;
   userId: string;
   title: string;
@@ -120,19 +259,27 @@ export type ResumeDocument = {
   careerStage: CareerStage;
   avatarUrl: string;
   avatarFrame: AvatarFrame;
-  personal: PersonalInfo;
+  personal: LegacyPersonalInfo;
   summary: string;
-  experiences: ExperienceItem[];
-  education: EducationItem[];
+  experiences: LegacyExperienceItem[];
+  education: LegacyEducationItem[];
   skills?: string[];
   skillGroups: SkillGroup[];
-  projects: ProjectItem[];
-  certifications: CertificationItem[];
-  awards: AwardItem[];
-  activities: ActivityItem[];
+  projects: LegacyProjectItem[];
+  certifications: LegacyCertificationItem[];
+  awards: LegacyAwardItem[];
+  activities: LegacyActivityItem[];
   createdAt: number;
   updatedAt: number;
 };
+
+export type EditablePersonalField = keyof ResumeSharedPersonalInfo | keyof ResumeLocalizedPersonalInfo;
+export type EditableExperienceField = keyof ExperienceItem | keyof ResumeLocalizedExperienceItem;
+export type EditableEducationField = keyof EducationItem | keyof ResumeLocalizedEducationItem;
+export type EditableProjectField = keyof ProjectItem | keyof ResumeLocalizedProjectItem;
+export type EditableCertificationField = keyof CertificationItem | keyof ResumeLocalizedCertificationItem;
+export type EditableAwardField = keyof AwardItem | keyof ResumeLocalizedAwardItem;
+export type EditableActivityField = keyof ActivityItem | keyof ResumeLocalizedActivityItem;
 
 export type ResumeFormSection =
   | "personal"
@@ -146,3 +293,4 @@ export type ResumeFormSection =
   | "activities";
 
 export type ResumeContentSection = Exclude<ResumeFormSection, "personal">;
+

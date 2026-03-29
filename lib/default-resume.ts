@@ -1,12 +1,20 @@
-﻿import type {
+﻿import {
+  createEmptyLocalizedEducation,
+  createEmptyLocalizedExperience,
+  createEmptyLocalizedProject,
+  createEmptyLocalizedSkillGroup,
+  defaultAvatarTransform
+} from "@/lib/resume-content";
+import type {
   ActivityItem,
   AwardItem,
   CertificationItem,
   EducationItem,
   ExperienceItem,
+  Locale,
   ProjectItem,
   ResumeDocument,
-  SkillGroup,
+  ResumeLocalizedContent,
   TemplateId
 } from "@/lib/types";
 
@@ -14,110 +22,125 @@ function createId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createEmptyExperience(): ExperienceItem {
+export function createEmptyExperience(id = createId("exp")): ExperienceItem {
   return {
-    id: createId("exp"),
-    jobTitle: "",
-    employer: "",
-    location: "",
+    id,
     startDate: "",
     endDate: "",
-    current: false,
-    description: "",
-    bullets: []
+    current: false
   };
 }
 
-export function createEmptyEducation(): EducationItem {
+export function createEmptyEducation(id = createId("edu")): EducationItem {
   return {
-    id: createId("edu"),
-    degree: "",
-    school: "",
-    location: "",
+    id,
     startDate: "",
-    endDate: "",
-    description: ""
+    endDate: ""
   };
 }
 
-export function createEmptyProject(): ProjectItem {
+export function createEmptyProject(id = createId("project")): ProjectItem {
   return {
-    id: createId("project"),
-    name: "",
-    role: "",
+    id,
     startDate: "",
     endDate: "",
-    description: "",
     link: ""
   };
 }
 
-export function createEmptySkillGroup(name = "Core Skills"): SkillGroup {
+export function createEmptyCertification(id = createId("cert")): CertificationItem {
   return {
-    id: createId("skill-group"),
-    name,
-    skills: []
+    id,
+    date: ""
   };
 }
 
-export function createEmptyCertification(): CertificationItem {
+export function createEmptyAward(id = createId("award")): AwardItem {
   return {
-    id: createId("cert"),
-    name: "",
-    issuer: "",
-    date: "",
-    description: ""
+    id,
+    date: ""
   };
 }
 
-export function createEmptyAward(): AwardItem {
+export function createEmptyActivity(id = createId("activity")): ActivityItem {
   return {
-    id: createId("award"),
-    title: "",
-    issuer: "",
-    date: "",
-    description: ""
+    id,
+    date: ""
   };
 }
 
-export function createEmptyActivity(): ActivityItem {
+export function createEmptyLocalizedContent(locale: Locale, ids?: {
+  experienceId?: string;
+  educationId?: string;
+  projectId?: string;
+  skillGroupId?: string;
+}): ResumeLocalizedContent {
+  const experienceId = ids?.experienceId ?? createId("exp");
+  const educationId = ids?.educationId ?? createId("edu");
+  const projectId = ids?.projectId ?? createId("project");
+  const skillGroupId = ids?.skillGroupId ?? createId("skill-group");
+
   return {
-    id: createId("activity"),
-    name: "",
-    organization: "",
-    date: "",
-    description: ""
+    title: locale === "vi" ? "CV chua dat ten" : "Untitled Resume",
+    personal: {
+      fullName: "",
+      title: "",
+      location: ""
+    },
+    summary: "",
+    experiences: [createEmptyLocalizedExperience(experienceId)],
+    education: [createEmptyLocalizedEducation(educationId)],
+    skillGroups: [createEmptyLocalizedSkillGroup(locale, skillGroupId)],
+    projects: [createEmptyLocalizedProject(projectId)],
+    certifications: [],
+    awards: [],
+    activities: []
   };
 }
 
-export function buildDefaultResume(userId: string, templateId: TemplateId = "professional", resumeId?: string): ResumeDocument {
+export function buildDefaultResume(userId: string, templateId: TemplateId = "professional", resumeId?: string, locale: Locale = "en"): ResumeDocument {
   const now = Date.now();
+  const experience = createEmptyExperience();
+  const education = createEmptyEducation();
+  const project = createEmptyProject();
+  const skillGroupId = createId("skill-group");
 
   return {
     id: resumeId ?? createId("resume"),
     userId,
-    title: "Untitled Resume",
+    title: locale === "vi" ? "CV chua dat ten" : "Untitled Resume",
     status: "draft",
     templateId,
     industryFocus: "general",
     careerStage: "under_3_years",
+    contentLocale: locale,
     avatarUrl: "",
     avatarFrame: "square",
+    avatarTransform: defaultAvatarTransform,
     personal: {
-      fullName: "",
-      title: "",
       email: "",
       phone: "",
-      location: "",
       website: "",
       linkedin: "",
       github: ""
     },
-    summary: "",
-    experiences: [createEmptyExperience()],
-    education: [createEmptyEducation()],
-    skillGroups: [createEmptySkillGroup()],
-    projects: [createEmptyProject()],
+    content: {
+      vi: createEmptyLocalizedContent("vi", {
+        experienceId: experience.id,
+        educationId: education.id,
+        projectId: project.id,
+        skillGroupId
+      }),
+      en: createEmptyLocalizedContent("en", {
+        experienceId: experience.id,
+        educationId: education.id,
+        projectId: project.id,
+        skillGroupId
+      })
+    },
+    experiences: [experience],
+    education: [education],
+    projects: [project],
     certifications: [],
     awards: [],
     activities: [],
@@ -125,5 +148,4 @@ export function buildDefaultResume(userId: string, templateId: TemplateId = "pro
     updatedAt: now
   };
 }
-
 

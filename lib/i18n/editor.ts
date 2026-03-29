@@ -44,6 +44,17 @@ export function getEditorCopy(locale: Locale) {
         preview: "Xem trước",
         saved: "Đã lưu tất cả thay đổi.",
         photoStored: "Ảnh đã được lưu trong trình duyệt này cho resume hiện tại.",
+        copiedToEn: "Đã sao chép nội dung hiện tại sang bản tiếng Anh.",
+        copiedToVi: "Đã sao chép nội dung hiện tại sang bản tiếng Việt.",
+        contentLocale: {
+          label: "Nội dung CV",
+          description: "Chọn ngôn ngữ đang chỉnh và cũng là ngôn ngữ dùng để xem trước, xuất PDF.",
+          vi: "Tiếng Việt",
+          en: "Tiếng Anh",
+          copyToEn: "Copy sang EN",
+          copyToVi: "Copy sang VI",
+          sharedFields: "Email, điện thoại, website, liên kết và ngày tháng được dùng chung cho cả hai ngôn ngữ."
+        },
         personal: {
           title: "Cài đặt resume",
           description:
@@ -61,6 +72,9 @@ export function getEditorCopy(locale: Locale) {
           uploadPhoto: "Tải ảnh lên",
           removePhoto: "Xóa ảnh",
           photoFrame: "Khung ảnh",
+          photoZoom: "Phóng to / thu nhỏ",
+          photoZoomHint: "Kéo ảnh trực tiếp trong khung để căn vị trí gương mặt hoặc bố cục phù hợp.",
+          photoResetPosition: "Đặt lại vị trí ảnh",
           square: "Vuông",
           portrait: "Dọc",
           fullName: "Họ và tên",
@@ -209,6 +223,17 @@ export function getEditorCopy(locale: Locale) {
         preview: "Preview",
         saved: "Saved all changes.",
         photoStored: "Photo is stored in this browser for the current resume.",
+        copiedToEn: "Copied the current content into the English version.",
+        copiedToVi: "Copied the current content into the Vietnamese version.",
+        contentLocale: {
+          label: "Resume language",
+          description: "Choose which language you are editing. The preview and PDF export will use this language too.",
+          vi: "Vietnamese",
+          en: "English",
+          copyToEn: "Copy to EN",
+          copyToVi: "Copy to VI",
+          sharedFields: "Email, phone, website, links, and date fields stay shared across both languages."
+        },
         personal: {
           title: "Resume settings",
           description:
@@ -226,6 +251,9 @@ export function getEditorCopy(locale: Locale) {
           uploadPhoto: "Upload photo",
           removePhoto: "Remove photo",
           photoFrame: "Photo frame",
+          photoZoom: "Zoom",
+          photoZoomHint: "Drag the image inside the frame to line up the face or composition with the existing layout.",
+          photoResetPosition: "Reset photo position",
           square: "Square",
           portrait: "Portrait",
           fullName: "Full name",
