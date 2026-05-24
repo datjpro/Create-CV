@@ -295,7 +295,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: printTitle ? `${printTitle.replace(/\s+/g, "-").toLowerCase()}` : "resume",
-    pageStyle: "@page { size: A4; margin: 8mm; }"
+    pageStyle: "@page { size: A4; margin: 8mm; } .resume-paper { width: 210mm; min-height: 297mm; }"
   });
 
   const restoreAvatarEditor = useCallback((transform: AvatarTransform) => {
@@ -940,7 +940,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             {copy.editor.previewPanel.printHint}
           </div>
           <div ref={previewPanelRef} className="screen-only mx-auto max-h-[calc(100vh-240px)] max-w-[980px] overflow-y-auto pr-2">
-            <div ref={printRef} className="mx-auto max-w-[960px] overflow-x-auto no-scrollbar">
+            <div ref={printRef} className="resume-print-root mx-auto max-w-[960px] overflow-x-auto no-scrollbar print:mx-0 print:max-w-none print:overflow-visible">
               <ResumeDocumentPreview resume={resume} activeSection={activeSection} />
             </div>
           </div>

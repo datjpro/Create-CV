@@ -145,9 +145,37 @@ button {
   min-height: 297mm;
 }
 
+.resume-print-root {
+  width: fit-content;
+}
+
 .resume-paper.resume-density-compact {
   font-size: 10.5pt;
   line-height: 1.35;
+}
+
+.resume-contact-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  row-gap: 2px;
+}
+
+.resume-contact-entry {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: baseline;
+}
+
+.resume-contact-entry--atomic {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.resume-contact-separator {
+  white-space: pre;
 }
 
 @page {
@@ -179,13 +207,26 @@ button {
     margin: 0 auto !important;
   }
 
-  .resume-paper {
+  .resume-print-root {
     width: auto !important;
-    min-height: auto !important;
   }
 
-  .resume-paper.resume-density-compact {
-    font-size: 10pt !important;
-    line-height: 1.3 !important;
+  .resume-paper {
+    width: 210mm !important;
+    min-height: 297mm !important;
+  }
+
+  .resume-contact-entry,
+  .resume-contact-entry a,
+  .resume-contact-entry span {
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    hyphens: manual !important;
+  }
+
+  .resume-contact-entry--atomic,
+  .resume-contact-entry--atomic a,
+  .resume-contact-entry--atomic span {
+    white-space: nowrap !important;
   }
 }
