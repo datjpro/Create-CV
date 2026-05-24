@@ -311,7 +311,7 @@ function getSectionLabel(section: ResumeContentSection, resume: ResumeDocument, 
 }
 
 function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }) {
-  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold", theme.heading)}>{label}</h2>;
+  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[10.5px] font-extrabold tracking-[0.18em]", theme.heading)}>{label}</h2>;
 }
 
 function PreviewSectionSpotlight({
@@ -333,13 +333,19 @@ function PreviewSectionSpotlight({
     <div
       data-preview-section={section}
       className={cn(
-        "scroll-my-24 rounded-[1.35rem] transition-all duration-300",
-        active && (theme.kind === "dark-portfolio"
-          ? "bg-white/8 ring-2 ring-white/15 shadow-[0_18px_36px_rgba(0,0,0,0.28)]"
-          : "bg-primary/10 ring-2 ring-primary/20 shadow-[0_18px_36px_rgba(15,23,42,0.10)]"),
+        "relative scroll-my-24 transition-all duration-200",
         className
       )}
     >
+      {active ? (
+        <span
+          aria-hidden
+          className={cn(
+            "screen-only pointer-events-none absolute -left-3 top-1 bottom-1 w-[3px] rounded-full",
+            theme.kind === "dark-portfolio" ? "bg-white/35" : "bg-primary/28"
+          )}
+        />
+      ) : null}
       {children}
     </div>
   );
