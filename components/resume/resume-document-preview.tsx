@@ -219,18 +219,23 @@ function compactInlineItems(items: Array<InlineItem | null | false>): InlineItem
   return items.filter((item): item is InlineItem => Boolean(item));
 }
 
-function renderInlineItems(items: InlineItem[], className: string, theme: PreviewTheme) {
+function renderInlineItems(items: InlineItem[], className: string, theme: PreviewTheme, options?: { preserveItemWrapping?: boolean }) {
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <p className={cn(className, theme.subtleText)}>
+    <p className={cn(className, theme.subtleText, options?.preserveItemWrapping && "resume-contact-line")}>
       {items.map((item, index) => (
-        <span key={`${item.label}-${index}`}>
-          {index > 0 ? " | " : null}
+        <span key={`${item.label}-${index}`} className={cn(options?.preserveItemWrapping && "resume-contact-entry resume-contact-entry--atomic")}>
+          {index > 0 ? <span className={cn(options?.preserveItemWrapping && "resume-contact-separator")}>{" | "}</span> : null}
           {item.href ? (
-            <a href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noreferrer" : undefined} className="underline-offset-2 transition hover:underline">
+            <a
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noreferrer" : undefined}
+              className="underline-offset-2 transition hover:underline"
+            >
               {item.label}
             </a>
           ) : (
@@ -306,7 +311,7 @@ function getSectionLabel(section: ResumeContentSection, resume: ResumeDocument, 
 }
 
 function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }) {
-  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[11px] font-extrabold", theme.heading)}>{label}</h2>;
+  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[10.5px] font-extrabold tracking-[0.18em]", theme.heading)}>{label}</h2>;
 }
 
 function PreviewSectionSpotlight({
@@ -328,13 +333,19 @@ function PreviewSectionSpotlight({
     <div
       data-preview-section={section}
       className={cn(
-        "scroll-my-24 rounded-[1.35rem] transition-all duration-300",
-        active && (theme.kind === "dark-portfolio"
-          ? "bg-white/8 ring-2 ring-white/15 shadow-[0_18px_36px_rgba(0,0,0,0.28)]"
-          : "bg-primary/10 ring-2 ring-primary/20 shadow-[0_18px_36px_rgba(15,23,42,0.10)]"),
+        "relative scroll-my-24 transition-all duration-200",
         className
       )}
     >
+      {active ? (
+        <span
+          aria-hidden
+          className={cn(
+            "screen-only pointer-events-none absolute -left-3 top-1 bottom-1 w-[3px] rounded-full",
+            theme.kind === "dark-portfolio" ? "bg-white/35" : "bg-primary/28"
+          )}
+        />
+      ) : null}
       {children}
     </div>
   );
@@ -345,7 +356,7 @@ function ResumeIdentity({ view, theme }: { view: ResumeView; theme: PreviewTheme
     <div className="min-w-0">
       <h1 className={cn("font-[var(--font-headline)] text-[27px] font-extrabold tracking-tight", theme.accentText)}>{view.content.personal.fullName || view.fallback.name}</h1>
       <p className={cn("mt-0.5 text-[13px] font-semibold", theme.accentText)}>{view.content.personal.title || view.fallback.title}</p>
-      {renderInlineItems(view.contactItems, "mt-1.5 text-[10.5px] leading-[1.45]", theme)}
+      {renderInlineItems(view.contactItems, "mt-1.5 text-[10.5px] leading-[1.45]", theme, { preserveItemWrapping: true })}
     </div>
   );
 }
@@ -358,7 +369,7 @@ function StandardResumeHeader({ resume, theme, view, showSummary, activeSection 
   if (photo) {
     return (
       <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
-        <header className={cn("border-b pb-3", theme.divider)}>
+        <header className={cn("page-break-avoid border-b pb-3", theme.divider)}>
           <div className="grid items-start gap-x-4 gap-y-2 [grid-template-columns:minmax(0,1fr)_144px]">
             <ResumeIdentity view={view} theme={theme} />
             <div className="row-span-2 flex justify-end">{photo}</div>
@@ -378,7 +389,7 @@ function StandardResumeHeader({ resume, theme, view, showSummary, activeSection 
 
   return (
     <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
-      <header className={cn("border-b pb-3", theme.divider)}>
+      <header className={cn("page-break-avoid border-b pb-3", theme.divider)}>
         <ResumeIdentity view={view} theme={theme} />
         {showSummary ? (
           <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} className="mt-3 min-w-0">
