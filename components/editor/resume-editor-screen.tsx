@@ -144,6 +144,19 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const { locale, copy } = useI18n();
   const printRef = useRef<HTMLDivElement | null>(null);
   const previewPanelRef = useRef<HTMLDivElement | null>(null);
+  const previewDragStateRef = useRef<{
+    active: boolean;
+    startX: number;
+    startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  }>({
+    active: false,
+    startX: 0,
+    startY: 0,
+    scrollLeft: 0,
+    scrollTop: 0
+  });
   const avatarSourceKeyRef = useRef("");
   const avatarRestoreKeyRef = useRef("");
   const resume = useResumeEditorStore((state) => state.resume);
@@ -196,6 +209,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const [mobileView, setMobileView] = useState<"build" | "preview">("build");
   const [avatarCrop, setAvatarCrop] = useState<CropPoint>({ x: 0, y: 0 });
   const [avatarZoom, setAvatarZoom] = useState(defaultAvatarTransform.zoom);
+  const [isPreviewDragging, setIsPreviewDragging] = useState(false);
   const [avatarMediaSize, setAvatarMediaSize] = useState<CropMediaSize | null>(null);
   const [avatarCropSize, setAvatarCropSize] = useState<CropSize | null>(null);
 
@@ -297,6 +311,50 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     documentTitle: printTitle ? `${printTitle.replace(/\s+/g, "-").toLowerCase()}` : "resume",
     pageStyle: "@page { size: A4; margin: 8mm; } .resume-paper { width: 210mm; min-height: 297mm; }"
   });
+
+  const handlePreviewMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.button != 0) {
+      return;
+    }
+
+    const previewPanel = previewPanelRef.current;
+    if (!previewPanel) {
+      return;
+    }
+
+    previewDragStateRef.current = {
+      active: true,
+      startX: event.clientX,
+      startY: event.clientY,
+      scrollLeft: previewPanel.scrollLeft,
+      scrollTop: previewPanel.scrollTop
+    };
+    setIsPreviewDragging(true);
+  }, []);
+
+  const handlePreviewMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const previewPanel = previewPanelRef.current;
+    const dragState = previewDragStateRef.current;
+    if (!dragState.active || !previewPanel) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+
+    previewPanel.scrollLeft = dragState.scrollLeft - deltaX;
+    previewPanel.scrollTop = dragState.scrollTop - deltaY;
+    event.preventDefault();
+  }, []);
+
+  const endPreviewDrag = useCallback(() => {
+    if (!previewDragStateRef.current.active) {
+      return;
+    }
+
+    previewDragStateRef.current.active = false;
+    setIsPreviewDragging(false);
+  }, []);
 
   const restoreAvatarEditor = useCallback((transform: AvatarTransform) => {
     if (!resume?.avatarUrl || !avatarMediaSize || !avatarCropSize) {
@@ -939,8 +997,18 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
           <div className="screen-only mx-auto mb-4 max-w-[960px] text-right text-xs text-on-surface-variant">
             {copy.editor.previewPanel.printHint}
           </div>
-          <div ref={previewPanelRef} className="screen-only mx-auto max-h-[calc(100vh-240px)] max-w-[980px] overflow-y-auto pr-2">
-            <div ref={printRef} className="resume-print-root mx-auto max-w-[960px] overflow-x-auto no-scrollbar print:mx-0 print:max-w-none print:overflow-visible">
+          <div
+            ref={previewPanelRef}
+            className={cn(
+              "screen-only mx-auto max-h-[calc(100vh-240px)] max-w-[980px] overflow-auto pr-2 no-scrollbar",
+              isPreviewDragging ? "cursor-grabbing select-none" : "cursor-grab"
+            )}
+            onMouseDown={handlePreviewMouseDown}
+            onMouseMove={handlePreviewMouseMove}
+            onMouseUp={endPreviewDrag}
+            onMouseLeave={endPreviewDrag}
+          >
+            <div ref={printRef} className="resume-print-root mx-auto max-w-[960px] print:mx-0 print:max-w-none print:overflow-visible">
               <ResumeDocumentPreview resume={resume} activeSection={activeSection} />
             </div>
           </div>
