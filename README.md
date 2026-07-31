@@ -1,121 +1,121 @@
-﻿# Create-CV
+# Create-CV — Production-Grade Web-Based Resume Builder
 
-Create-CV is a web-based CV builder designed to help students and junior candidates create ATS-friendly resumes quickly, customize content in real time, and export recruiter-readable PDFs directly from the browser.
+**Create-CV** is an editorial, web-based resume builder designed to help professionals, students, software engineers, and executives build recruiter-friendly, ATS-safe resumes with real-time editing, bi-directional focus navigation, live template switching, and browser-native PDF export.
 
-## Project purpose
-This project was built to solve a common problem in student job applications:
-- many resume builders focus too much on visuals and produce layouts that are not ATS-safe
-- users often have to rewrite the same resume multiple times for different roles
-- beginners need a guided editor instead of a fixed sample CV that does not match their real profile
+---
 
-Create-CV addresses that by combining a guided resume editor, multiple template styles, account-based resume management, and browser-native PDF export in one system.
+## 🌟 Key Features
 
-## What the system does
-- provides a marketing landing page and template gallery
-- supports authentication with Firebase and a local demo fallback
-- gives each signed-in user a protected dashboard for resume management
-- creates editable resumes from blank structured starter data instead of locked sample content
-- lets users edit resumes in a split-screen editor with live preview
-- supports ATS-oriented section structure including summary, grouped skills, projects, experience, education, certifications, awards, and activities
-- allows template switching without losing resume data
-- exports resumes to PDF using browser print flow while keeping text selectable
+### 🎨 13 Premium Industry-Tailored CV Templates
+Choose from 13 curated, recruiter-tested resume templates designed across distinct visual aesthetics:
+* **The Executive (`professional`)**: Structured, conservative single-column for business, finance & corporate roles.
+* **The Minimalist (`minimal`)**: Whitespace-first single column for technical & data-centric resumes.
+* **The Modernist (`creative`)**: Expressive typography with single-column ATS safety for creative roles.
+* **The Nightfolio (`dark-portfolio`)**: Dark portfolio layout with an identity sidebar for software developers.
+* **The Slate Board (`corporate-slate`)**: Slate-toned layout with elevated section hierarchy for consulting & operations.
+* **The First Page (`compact-fresher`)**: Compact single-page format for students & early-career applicants.
+* **The Split Ledger (`modern-columns`)**: Two-zone editorial composition for product & marketing professionals.
+* **The Clean Pitch (`clean-showcase`)**: Showcase single column emphasizing project storytelling.
+* **The Nordic Modern (`nordic-minimal`)**: *NEW* Scandinavian editorial layout with warm serif typography.
+* **The Emerald Executive (`emerald-executive`)**: *NEW* Deep forest emerald banner layout for directors & senior executives.
+* **The Tech Matrix (`tech-matrix`)**: *NEW* Code-inspired layout with terminal badge tags for software engineers & DevOps.
+* **The Editorial Serif (`editorial-elegance`)**: *NEW* High-fashion & publication-grade magazine layout with Playfair serif contrast.
+* **The Modern Accent (`vibrant-gradient`)**: *NEW* Indigo-to-Teal gradient banner with floating card components.
 
-## What has been implemented
-### Core features
-- account registration and login flow
-- protected dashboard with resume create, list, duplicate, delete, and edit actions
-- idempotent `/resume/new` flow to avoid duplicate resume creation during effect replay
-- Firebase Firestore integration for persistent resume storage
-- local demo mode when Firebase configuration is missing
+### 🔄 Bi-Directional Form & Preview Synchronization
+* **Left ➔ Right Highlight**: Focusing any input field on the left form panel automatically scrolls the right CV preview paper to that section, highlighting it with a **glowing border** and an `Editing` badge.
+* **Right ➔ Left Click Navigation**: Clicking any section directly on the CV preview paper automatically smooth-scrolls the left form column to that `SectionCard` and auto-focuses its first input field.
 
-### Resume editor
-- real-time resume editor with live preview
-- editable personal information, summary, projects, work experience, education, certifications, awards, and activities
-- grouped skills model for ATS-friendly technical or professional skill presentation
-- industry focus selector: general, IT/software, marketing/creative, finance/legal
-- career stage selector to change section order for fresher, student, and experienced users
-- blank structured starter resume instead of hardcoded sample persona content
+### 🎯 Real-Time Template Gallery Filtering & Search
+* Interactive category tabs (*All*, *Minimal*, *Executive*, *Technical*, *Creative*, *Editorial*, *Portfolio*, *Corporate*).
+* Instant keyword search across template names, hooks, layout styles, and target industries.
 
-### Template and rendering system
-- three resume templates: Professional, Minimal, Creative
-- all templates normalized to ATS-safe single-column reading flow
-- dynamic section ordering based on industry focus and career stage
-- template metadata showing best-fit industries, ATS readability level, and layout style
-- compact A4-oriented preview/export layout to reduce unnecessary page overflow
+### 🌐 Bilingual Internationalization (i18n)
+* Complete dual-language support for Vietnamese (`vi`) and English (`en`).
+* One-click content copying between Vietnamese and English locales.
 
-### Marketing and UX
-- auth-aware marketing CTA flow for guest and signed-in users
-- template gallery showing recommended industries and ATS notes
-- synchronized marketing copy around editable content and ATS-safe templates
-- dashboard and homepage updated to reflect real product behavior
+### 🖨️ Recruiter-Safe PDF Export Engine
+* Browser-native `@media print` engine with 100% exact color reproduction (`-webkit-print-color-adjust: exact`).
+* Atomic contact field protection (`.resume-contact-entry--atomic`) preventing unnatural line breaks on emails, LinkedIn handles, or GitHub URLs.
+* Smart page-break prevention (`break-inside: avoid`) ensuring sections stay intact across A4 pages.
 
-## Stack
-- Bun for package management and scripts
-- Next.js App Router + React + TypeScript
-- Tailwind CSS with a custom design-token layer in the app styles
-- Firebase Auth and Firestore when env vars are provided
-- local demo auth/data mode when Firebase is not configured
-- Zustand for editor state synchronization
+---
 
-## Routes
-- `/` landing page
-- `/templates` template library
-- `/login` and `/register` auth flow
-- `/dashboard` protected resume workspace
-- `/resume/new?template=<professional|minimal|creative>` create flow
-- `/resume/[resumeId]/edit` editor, live preview, template switching, and PDF export
+## 🏗️ Technology Stack
 
-## Local setup
-1. Install dependencies:
-   `bun install`
-2. Start the dev server:
-   `bun run dev`
-3. Open `http://localhost:3000`
+* **Framework**: Next.js 15 (App Router), React 19, TypeScript (Strict Mode)
+* **State Management**: Zustand Store (`store/resume-editor-store.ts`)
+* **Styling**: Tailwind CSS v3 + CSS Custom Properties & Custom Tokens (`app/globals.css`)
+* **Backend & Auth**: Firebase Auth & Firestore (with local browser storage fallback for demo mode)
+* **PDF Engine**: `react-to-print` + CSS `@media print`
+* **Package Manager**: Bun / npm
 
-## Firebase configuration
-Copy `.env.example` to `.env.local` and fill:
+---
+
+## 🚦 Application Routes
+
+* `/` — Landing page with hero banner, template highlights & feature showcase
+* `/templates` — Interactive template library with category filter & real-time search
+* `/dashboard` — Protected resume workspace (create, list, edit, duplicate, delete)
+* `/resume/new?template=<id>` — Fast resume creation flow
+* `/resume/[resumeId]/edit` — Split-screen editor with bi-directional sync, template switcher & PDF export
+* `/login` & `/register` — Authentication flows (Firebase Auth / Demo mode)
+
+---
+
+## 🚀 Local Quickstart
+
+### Prerequisites
+Make sure you have Node.js (v18+) or Bun installed.
+
+### Installation & Running
 
 ```bash
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
+# 1. Install dependencies
+npm install
+# or: bun install
+
+# 2. Run local development server
+npm run dev
+# or: bun run dev
+
+# 3. Open browser at
+http://localhost:3000
 ```
 
-If those values are missing, the app automatically runs in demo mode:
-- email/password accounts are stored locally in browser storage
-- Google/GitHub buttons create demo sessions locally
-- resumes are stored per browser in local storage
+---
 
-If Firebase Storage is not enabled on Blaze:
-- Authentication still works
-- Firestore resume CRUD still works
-- live preview, template switching, and PDF export still work
-- avatar upload remains intentionally disabled
+## 🔑 Firebase Configuration (Optional)
 
-## Scripts
-- `bun run dev`
-- `bun run lint`
-- `bun run typecheck`
-- `bun run build`
+Copy `.env.example` to `.env.local`:
 
-## Verification completed
-The project has been verified with:
-- `npm run typecheck`
-- `npm run lint`
-- `cmd /c npm run build`
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
 
-## CV-ready summary
-You can adapt the project into CV bullets like these:
-- Built a Next.js and TypeScript web application for ATS-friendly CV creation with live editing, template switching, and browser-based PDF export.
-- Implemented Firebase-authenticated resume management with create, update, duplicate, delete, and protected dashboard workflows, plus a local demo fallback mode.
-- Designed a dynamic resume data model supporting grouped skills, projects, certifications, awards, and career-stage-based section ordering for different job targets.
-- Refactored multiple resume templates into ATS-safe single-column layouts and optimized A4 export density to reduce unnecessary multi-page output.
-- Improved UX by adding auth-aware marketing CTAs, industry-fit template guidance, and editable blank starter content instead of hardcoded sample resumes.
+> **Note**: If environment variables are omitted, Create-CV automatically operates in **Local Demo Mode**, persisting resumes securely in local browser storage.
 
-## Plan tracking
-Implementation status is tracked in:
-- `plan/implementation-plan.md`
+---
+
+## 🧪 Verification Protocol
+
+Run tests & lint checks prior to committing:
+
+```bash
+# 1. TypeScript compilation check
+npm run typecheck
+
+# 2. Linter & style check
+npm run lint
+```
+
+---
+
+## 📝 License & Rules
+
+Refer to [`AGENTS.md`](file:///D:/Demo/Create-CV/AGENTS.md) for engineering standards, commit conventions, and development guidelines.
