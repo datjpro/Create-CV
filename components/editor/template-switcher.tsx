@@ -43,7 +43,7 @@ export function TemplateSwitcher({
                 <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-primary">{templateCopy.category}</div>
                 {disabled ? (
                   <span className="rounded-full bg-error-container px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-on-error-container">
-                    {locale === "vi" ? "?ang ?n" : "Hidden"}
+                    {locale === "vi" ? "Đang ẩn" : "Hidden"}
                   </span>
                 ) : null}
               </div>

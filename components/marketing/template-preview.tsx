@@ -132,6 +132,16 @@ export function TemplatePreview({ templateId, compact = false }: { templateId: T
       return <DarkPortfolioPreview />;
     case "modern-columns":
       return <ModernColumnsPreview />;
+    case "nordic-minimal":
+      return <StandardPreview accent="bg-stone-100" divider="bg-stone-800" highlight="bg-stone-200/70" />;
+    case "emerald-executive":
+      return <StandardPreview accent="bg-emerald-50" divider="bg-emerald-700" highlight="bg-emerald-100" showcase />;
+    case "tech-matrix":
+      return <StandardPreview accent="bg-slate-900 text-teal-300" divider="bg-teal-500" highlight="bg-slate-800" dense />;
+    case "editorial-elegance":
+      return <StandardPreview accent="bg-amber-50/80" divider="bg-amber-900" highlight="bg-amber-100/60" showcase={compact} />;
+    case "vibrant-gradient":
+      return <StandardPreview accent="bg-gradient-to-r from-indigo-100 to-teal-100" divider="bg-indigo-600" highlight="bg-indigo-50" showcase />;
     case "corporate-slate":
       return <StandardPreview accent="bg-slate-100" divider="bg-slate-400/50" highlight="bg-slate-200/80" />;
     case "compact-fresher":

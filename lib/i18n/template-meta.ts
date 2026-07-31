@@ -1,4 +1,4 @@
-﻿import type { Locale, TemplateId } from "@/lib/types";
+import type { Locale, TemplateId } from "@/lib/types";
 
 export function getTemplateMetaCopy(
   locale: Locale
@@ -113,6 +113,61 @@ export function getTemplateMetaCopy(
           atsReadabilityLevel: "An toàn ATS",
           layoutStyle: "Showcase một cột",
           notes: "Lý tưởng khi dự án và chiều sâu kỹ năng cần nổi bật hơn timeline corporate truyền thống."
+        },
+        "nordic-minimal": {
+          category: "Minimal",
+          name: "The Nordic Modern",
+          hook: "Phong cách editorial Bắc Âu với tương phản typography và đường nét tối giản",
+          description: "Template tối giản cao cấp với tiêu đề serif tinh tế, viền trung tính ấm và thứ bậc thông tin minh bạch.",
+          badge: "Design Pick",
+          featuredCopy: "Thiết kế dành cho Product Manager, UX/UI Designer, Design Lead và chiến lược gia sáng tạo tôn trọng khoảng trống.",
+          atsReadabilityLevel: "Ưu tiên ATS",
+          layoutStyle: "Bắc Âu tối giản",
+          notes: "Hình học đường nét hài hòa cùng whitespace rộng rãi giúp trải nghiệm đọc nhẹ nhàng."
+        },
+        "emerald-executive": {
+          category: "Executive",
+          name: "The Emerald Executive",
+          hook: "Banner xanh ngọc lục bảo đẳng cấp cùng chỉ số lãnh đạo uy tín",
+          description: "CV lãnh đạo uy quyền với dải header xanh rừng sâu, đường nét ánh kim nhã nhặn và căn chỉnh hai vùng chuyên nghiệp.",
+          badge: "Executive",
+          featuredCopy: "Được may đo cho Giám đốc, Quản lý Vận hành, Trưởng phòng và Lãnh đạo doanh nghiệp.",
+          atsReadabilityLevel: "Ưu tiên ATS",
+          layoutStyle: "Executive xanh ngọc",
+          notes: "Tạo ấn tượng vững chắc về uy tín, năng lực điều hành và tầm ảnh hưởng."
+        },
+        "tech-matrix": {
+          category: "Technical",
+          name: "The Tech Matrix",
+          hook: "Cấu trúc thiết kế riêng cho lập trình viên và kỹ sư phần mềm",
+          description: "Bố cục kỹ thuật với badge kỹ năng dạng terminal, điểm nhấn GitHub và các thẻ dự án tối ưu.",
+          badge: "Developer",
+          featuredCopy: "Dành riêng cho Full-stack Developer, DevOps, Systems Architect và Data Scientist.",
+          atsReadabilityLevel: "An toàn ATS",
+          layoutStyle: "Ma trận Lập trình viên",
+          notes: "Tôn vinh tech stack, kho code GitHub, kiến trúc hệ thống và đóng góp công nghệ."
+        },
+        "editorial-elegance": {
+          category: "Editorial",
+          name: "The Editorial Serif",
+          hook: "Vẻ đẹp ấn phẩm tạp chí với tiêu đề Serif tương phản cao",
+          description: "Layout CV phong cách tạp chí cao cấp với phông chữ kiểu Playfair, dòng trích dẫn tinh tế và đường kẻ dọc sang trọng.",
+          badge: "Premium",
+          featuredCopy: "Hoàn hảo cho Giám đốc Marketing, Chuyên gia Truyền thông, Kiến trúc sư và Cố vấn thương hiệu.",
+          atsReadabilityLevel: "An toàn ATS",
+          layoutStyle: "Tạp chí cao cấp",
+          notes: "Nổi bật hoàn toàn nhờ tính nghệ thuật và đẳng cấp của typography xuất bản."
+        },
+        "vibrant-gradient": {
+          category: "Creative",
+          name: "The Modern Accent",
+          hook: "Header chuyển màu hiện đại với thẻ kỹ năng và badge thời thượng",
+          description: "Giao diện hiện đại kết hợp dải gradient Indigo - Cyan, các thẻ float nhẹ và badge kỹ năng trực quan.",
+          badge: "Trending",
+          featuredCopy: "Lựa chọn tuyệt vời cho Startup, Digital Marketing, Product Designer và Growth Marketer.",
+          atsReadabilityLevel: "An toàn ATS",
+          layoutStyle: "Modern Banner Gradient",
+          notes: "Thu hút ánh nhìn lập tức nhưng vẫn giữ trọn khả năng đọc file chuẩn recruiter."
         }
       }
     : {
@@ -200,6 +255,61 @@ export function getTemplateMetaCopy(
           atsReadabilityLevel: "ATS-safe",
           layoutStyle: "Showcase one-column",
           notes: "Ideal when projects and skill depth should stand out more than a traditional corporate timeline."
+        },
+        "nordic-minimal": {
+          category: "Minimal",
+          name: "The Nordic Modern",
+          hook: "Scandinavian editorial style with typography contrast and line geometry",
+          description: "A pristine minimal template featuring refined serif headers, warm neutral borders, and clear metadata hierarchy.",
+          badge: "Design Pick",
+          featuredCopy: "Designed for product, UX/UI, design lead and creative strategists who appreciate typography and whitespace.",
+          atsReadabilityLevel: "ATS-first",
+          layoutStyle: "Scandinavian minimal",
+          notes: "Harmonious line geometry and generous whitespace make reading effortless."
+        },
+        "emerald-executive": {
+          category: "Executive",
+          name: "The Emerald Executive",
+          hook: "Deep emerald identity header with high-trust corporate metrics",
+          description: "An authoritative executive resume with rich forest emerald headers, gold subtle accents, and double-column metric alignment.",
+          badge: "Executive",
+          featuredCopy: "Tailored for senior directors, operations leaders, managers and high-responsibility corporate executives.",
+          atsReadabilityLevel: "ATS-first",
+          layoutStyle: "Emerald banner executive",
+          notes: "Exudes authority, trust, and structured leadership impact."
+        },
+        "tech-matrix": {
+          category: "Technical",
+          name: "The Tech Matrix",
+          hook: "Code-inspired architecture built specifically for software engineers",
+          description: "A dark terminal-accented tech template with code-block skill tags, GitHub highlights, and project metrics spotlight.",
+          badge: "Developer",
+          featuredCopy: "Engineered for full-stack developers, DevOps, systems architects and data scientists.",
+          atsReadabilityLevel: "ATS-safe",
+          layoutStyle: "Developer matrix layout",
+          notes: "Highlights technical stack, GitHub repositories, system architecture and code contributions."
+        },
+        "editorial-elegance": {
+          category: "Editorial",
+          name: "The Editorial Serif",
+          hook: "Publication-style elegance with high contrast serif headings",
+          description: "A sophisticated magazine-style resume layout with Playfair-inspired typography, elegant quotes, and vertical accent rules.",
+          badge: "Premium",
+          featuredCopy: "Ideal for marketing leaders, PR strategists, journalists, architects and brand consultants.",
+          atsReadabilityLevel: "ATS-safe",
+          layoutStyle: "Publication editorial",
+          notes: "Stand out with publication-grade editorial styling and refined serif contrast."
+        },
+        "vibrant-gradient": {
+          category: "Creative",
+          name: "The Modern Accent",
+          hook: "Contemporary gradient identity with pill badges and modern cards",
+          description: "A dynamic layout featuring a vibrant Indigo-to-Teal header, floating skill cards, and modern badge badges.",
+          badge: "Trending",
+          featuredCopy: "Perfect for tech startups, growth marketers, digital designers, and modern product leads.",
+          atsReadabilityLevel: "ATS-safe",
+          layoutStyle: "Gradient banner modern",
+          notes: "Catch immediate visual attention while keeping machine readability intact."
         }
       };
 }

@@ -1,4 +1,4 @@
-﻿/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -98,19 +98,37 @@ function getInitialAvatarCropFromArea(croppedAreaPercentages: CropArea, mediaSiz
 }
 
 function SectionCard({
+  section,
   active,
   title,
   description,
   children
 }: {
+  section: ResumeFormSection;
   active: boolean;
   title: string;
   description: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("rounded-[1.75rem] bg-surface-container-lowest p-6 shadow-sm transition", active && "ring-2 ring-primary/20")}>
-      <h2 className="font-[var(--font-headline)] text-2xl font-extrabold tracking-tight text-primary">{title}</h2>
+    <section
+      data-editor-section={section}
+      className={cn(
+        "rounded-[1.75rem] bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 scroll-my-24 border",
+        active
+          ? "border-primary ring-2 ring-primary/30 shadow-lg shadow-primary/5"
+          : "border-outline-variant/15 hover:border-outline-variant/30"
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-[var(--font-headline)] text-2xl font-extrabold tracking-tight text-primary">{title}</h2>
+        {active ? (
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            Đang chọn
+          </span>
+        ) : null}
+      </div>
       <p className="mt-2 text-sm leading-6 text-on-surface-variant">{description}</p>
       <div className="mt-6 space-y-4">{children}</div>
     </section>
@@ -277,6 +295,27 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     const timer = window.setTimeout(() => setStatusMessage(""), 2500);
     return () => window.clearTimeout(timer);
   }, [statusMessage]);
+
+  const handleSelectSection = useCallback(
+    (section: ResumeFormSection) => {
+      setActiveSection(section);
+      if (mobileView === "preview") {
+        setMobileView("build");
+      }
+
+      const targetCard = document.querySelector(`[data-editor-section="${section}"]`);
+      if (targetCard instanceof HTMLElement) {
+        targetCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        const firstInput = targetCard.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          "input:not([type=hidden]), textarea, select"
+        );
+        if (firstInput) {
+          firstInput.focus({ preventScroll: true });
+        }
+      }
+    },
+    [setActiveSection, mobileView]
+  );
 
   useEffect(() => {
     const container = previewPanelRef.current;
@@ -540,7 +579,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             <button
               key={section.id}
               type="button"
-              onClick={() => setActiveSection(section.id)}
+              onClick={() => handleSelectSection(section.id)}
               className={cn("rounded-full px-4 py-2 text-sm font-semibold transition", activeSection === section.id ? "bg-primary text-on-primary" : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest")}
             >
               {section.label}
@@ -563,7 +602,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             {statusMessage ? <div className="rounded-2xl bg-primary-fixed px-4 py-3 text-sm text-on-primary-fixed-variant">{statusMessage}</div> : null}
             {error ? <div className="rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container">{error}</div> : null}
 
-            <SectionCard active={activeSection === "personal"} title={copy.editor.personal.title} description={copy.editor.personal.description}>
+            <SectionCard section="personal" active={activeSection === "personal"} title={copy.editor.personal.title} description={copy.editor.personal.description}>
               <div className="rounded-[1.5rem] bg-surface-container-low p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
@@ -726,14 +765,14 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
               </div>
             </SectionCard>
 
-            <SectionCard active={activeSection === "summary"} title={copy.editor.summary.title} description={getSummaryHint(resume.industryFocus, locale)}>
+            <SectionCard section="summary" active={activeSection === "summary"} title={copy.editor.summary.title} description={getSummaryHint(resume.industryFocus, locale)}>
               <div>
                 <FieldLabel>{copy.editor.summary.label}</FieldLabel>
                 <textarea value={activeContent.summary} onFocus={() => setActiveSection("summary")} onChange={(event) => updateSummary(event.target.value)} className={`${textareaClass} mt-2`} placeholder={copy.editor.summary.placeholder} />
               </div>
             </SectionCard>
 
-            <SectionCard active={activeSection === "skills"} title={copy.editor.skills.title} description={getSkillsHint(resume.industryFocus, locale)}>
+            <SectionCard section="skills" active={activeSection === "skills"} title={copy.editor.skills.title} description={getSkillsHint(resume.industryFocus, locale)}>
               {activeContent.skillGroups.map((group) => (
                 <div key={group.id} className="rounded-[1.5rem] border border-outline-variant/20 bg-surface-container-low p-4">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -756,7 +795,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "projects"} title={copy.editor.projects.title} description={copy.editor.projects.description}>
+            <SectionCard section="projects" active={activeSection === "projects"} title={copy.editor.projects.title} description={copy.editor.projects.description}>
               {resume.projects.map((project) => {
                 const localizedProject = findById(activeContent.projects, project.id);
                 return (
@@ -795,7 +834,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                 {copy.editor.projects.add}
               </button>
             </SectionCard>
-            <SectionCard active={activeSection === "experience"} title={copy.editor.experience.title} description={copy.editor.experience.description}>
+            <SectionCard section="experience" active={activeSection === "experience"} title={copy.editor.experience.title} description={copy.editor.experience.description}>
               {resume.experiences.map((item) => {
                 const localizedExperience = findById(activeContent.experiences, item.id);
                 return (
@@ -843,7 +882,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "education"} title={copy.editor.education.title} description={copy.editor.education.description}>
+            <SectionCard section="education" active={activeSection === "education"} title={copy.editor.education.title} description={copy.editor.education.description}>
               {resume.education.map((item) => {
                 const localizedEducation = findById(activeContent.education, item.id);
                 return (
@@ -883,7 +922,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "certifications"} title={copy.editor.certifications.title} description={copy.editor.certifications.description}>
+            <SectionCard section="certifications" active={activeSection === "certifications"} title={copy.editor.certifications.title} description={copy.editor.certifications.description}>
               {resume.certifications.map((item) => {
                 const localizedCertification = findById(activeContent.certifications, item.id);
                 return (
@@ -915,7 +954,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
               </button>
             </SectionCard>
 
-            <SectionCard active={activeSection === "awards"} title={copy.editor.awards.title} description={copy.editor.awards.description}>
+            <SectionCard section="awards" active={activeSection === "awards"} title={copy.editor.awards.title} description={copy.editor.awards.description}>
               {resume.awards.map((item) => {
                 const localizedAward = findById(activeContent.awards, item.id);
                 return (
@@ -946,7 +985,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                 {copy.editor.awards.add}
               </button>
             </SectionCard>
-            <SectionCard active={activeSection === "activities"} title={copy.editor.activities.title} description={copy.editor.activities.description}>
+            <SectionCard section="activities" active={activeSection === "activities"} title={copy.editor.activities.title} description={copy.editor.activities.description}>
               {resume.activities.map((item) => {
                 const localizedActivity = findById(activeContent.activities, item.id);
                 return (
@@ -1009,7 +1048,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
             onMouseLeave={endPreviewDrag}
           >
             <div ref={printRef} className="resume-print-root mx-auto max-w-[960px] print:mx-0 print:max-w-none print:overflow-visible">
-              <ResumeDocumentPreview resume={resume} activeSection={activeSection} />
+              <ResumeDocumentPreview resume={resume} activeSection={activeSection} onSelectSection={handleSelectSection} />
             </div>
           </div>
         </section>

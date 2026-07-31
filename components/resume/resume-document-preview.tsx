@@ -1,4 +1,4 @@
-﻿import { ResumeAvatarFrame } from "@/components/resume/resume-avatar-frame";
+import { ResumeAvatarFrame } from "@/components/resume/resume-avatar-frame";
 import { getResumeContent, mergeLocalizedItems } from "@/lib/resume-content";
 import { getSectionOrder, getSkillSectionLabel } from "@/lib/resume-metadata";
 import type { Locale, ResumeContentSection, ResumeDocument, ResumeFormSection, TemplateId } from "@/lib/types";
@@ -131,6 +131,77 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     bodySpacing: "mt-4",
     sectionSpacing: "space-y-3",
     itemCard: "rounded-[1rem] bg-surface-container-low p-3"
+  },
+  "nordic-minimal": {
+    kind: "standard",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-stone-200 bg-stone-50/50 px-6 py-5 shadow-float",
+    divider: "border-stone-300",
+    heading: "text-stone-900 border-stone-800 tracking-[0.22em] font-serif font-black",
+    accentText: "text-stone-900 font-serif",
+    tag: "bg-stone-200/70 text-stone-800 border border-stone-300/50",
+    subtleText: "text-stone-600",
+    photoClass: "h-[190px] w-[140px] rounded-[0.75rem] border border-stone-300",
+    bodySpacing: "mt-4",
+    sectionSpacing: "space-y-3.5",
+    summaryCard: "rounded-[0.75rem] border-l-4 border-stone-800 bg-stone-100/80 p-3.5 italic",
+    showSkillBand: true
+  },
+  "emerald-executive": {
+    kind: "standard",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-emerald-900/15 bg-white px-6 py-5 shadow-float",
+    divider: "border-emerald-700/30",
+    heading: "text-emerald-950 border-emerald-800/80 tracking-[0.2em] font-extrabold uppercase",
+    accentText: "text-emerald-900 font-bold",
+    tag: "bg-emerald-50 text-emerald-900 border border-emerald-200",
+    subtleText: "text-emerald-950/80",
+    photoClass: "h-[196px] w-[144px] rounded-[1rem] border-2 border-emerald-800/30",
+    bodySpacing: "mt-3.5",
+    sectionSpacing: "space-y-3",
+    itemCard: "rounded-[0.85rem] border border-emerald-100 bg-emerald-50/40 p-3",
+    summaryCard: "rounded-[1rem] border border-emerald-200 bg-emerald-50/60 p-3.5"
+  },
+  "tech-matrix": {
+    kind: "standard",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-slate-300 bg-white px-6 py-5 shadow-float",
+    divider: "border-teal-500/40",
+    heading: "text-slate-900 border-teal-600 tracking-[0.2em] font-mono font-bold uppercase",
+    accentText: "text-teal-700 font-semibold",
+    tag: "bg-slate-900 text-teal-300 font-mono text-[9.5pt]",
+    subtleText: "text-slate-700",
+    photoClass: "h-[188px] w-[140px] rounded-lg border border-slate-700",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-3",
+    itemCard: "rounded-xl border border-slate-200 bg-slate-50/80 p-3 font-sans",
+    summaryCard: "rounded-xl border border-teal-500/30 bg-teal-50/30 p-3 font-sans",
+    showSkillBand: true
+  },
+  "editorial-elegance": {
+    kind: "standard",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-amber-900/15 bg-stone-50/30 px-6 py-5 shadow-float",
+    divider: "border-amber-900/25",
+    heading: "text-amber-950 border-amber-900/60 tracking-[0.22em] font-serif font-bold italic",
+    accentText: "text-amber-950 font-serif",
+    tag: "bg-amber-100/60 text-amber-950 border border-amber-300/40",
+    subtleText: "text-stone-700",
+    photoClass: "h-[200px] w-[148px] rounded-[1.2rem] border border-amber-900/20",
+    bodySpacing: "mt-4",
+    sectionSpacing: "space-y-3.5",
+    summaryCard: "rounded-[1rem] border-l-2 border-amber-800 bg-amber-50/50 p-3.5 font-serif italic"
+  },
+  "vibrant-gradient": {
+    kind: "standard",
+    shell: "resume-paper resume-density-compact print-friendly rounded-[1rem] border border-indigo-200 bg-white px-6 py-5 shadow-float",
+    divider: "border-indigo-300",
+    heading: "text-indigo-950 border-indigo-500 tracking-[0.18em] font-extrabold uppercase",
+    accentText: "text-indigo-900 font-bold",
+    tag: "bg-gradient-to-r from-indigo-50 to-teal-50 text-indigo-950 border border-indigo-200/80 font-medium",
+    subtleText: "text-slate-700",
+    photoClass: "h-[192px] w-[140px] rounded-[1.25rem] border-2 border-indigo-400/40",
+    bodySpacing: "mt-3.5",
+    sectionSpacing: "space-y-3",
+    itemCard: "rounded-[1rem] border border-indigo-100 bg-indigo-50/30 p-3",
+    summaryCard: "rounded-[1.25rem] border border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-teal-50/30 p-3.5",
+    showSkillBand: true
   }
 };
 
@@ -318,12 +389,14 @@ function PreviewSectionSpotlight({
   section,
   activeSection,
   theme,
+  onSelectSection,
   children,
   className
 }: {
   section: ResumeFormSection;
   activeSection?: ResumeFormSection;
   theme: PreviewTheme;
+  onSelectSection?: (section: ResumeFormSection) => void;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -332,19 +405,38 @@ function PreviewSectionSpotlight({
   return (
     <div
       data-preview-section={section}
+      onClick={(e) => {
+        if (onSelectSection) {
+          e.stopPropagation();
+          onSelectSection(section);
+        }
+      }}
       className={cn(
-        "relative scroll-my-24 transition-all duration-200",
+        "relative scroll-my-24 transition-all duration-300 rounded-xl p-2 -m-2",
+        onSelectSection && "cursor-pointer hover:ring-2 hover:ring-primary/40 hover:bg-primary/[0.02]",
+        active && [
+          "ring-2 ring-primary bg-primary/[0.04] shadow-lg shadow-primary/10 scale-[1.005]",
+          theme.kind === "dark-portfolio" ? "ring-white bg-white/[0.08] text-white" : "ring-primary"
+        ],
         className
       )}
     >
       {active ? (
-        <span
-          aria-hidden
-          className={cn(
-            "screen-only pointer-events-none absolute -left-3 top-1 bottom-1 w-[3px] rounded-full",
-            theme.kind === "dark-portfolio" ? "bg-white/35" : "bg-primary/28"
-          )}
-        />
+        <>
+          <span
+            aria-hidden
+            className={cn(
+              "screen-only pointer-events-none absolute -left-3.5 top-2 bottom-2 w-[4px] rounded-full shadow-sm",
+              theme.kind === "dark-portfolio" ? "bg-white" : "bg-primary"
+            )}
+          />
+          {onSelectSection ? (
+            <span className="screen-only pointer-events-none absolute -top-3.5 right-2 z-20 inline-flex items-center gap-1.5 rounded-full bg-primary px-2.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-on-primary shadow-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              Đang chỉnh sửa
+            </span>
+          ) : null}
+        </>
       ) : null}
       {children}
     </div>
@@ -361,20 +453,20 @@ function ResumeIdentity({ view, theme }: { view: ResumeView; theme: PreviewTheme
   );
 }
 
-function StandardResumeHeader({ resume, theme, view, showSummary, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; showSummary: boolean; activeSection?: ResumeFormSection }) {
+function StandardResumeHeader({ resume, theme, view, showSummary, activeSection, onSelectSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; showSummary: boolean; activeSection?: ResumeFormSection; onSelectSection?: (section: ResumeFormSection) => void }) {
   const photo = resume.avatarUrl ? (
     <ResumeAvatarFrame src={resume.avatarUrl} alt={view.content.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={theme.photoClass} fallbackText={view.content.personal.fullName.slice(0, 1) || "A"} imageClassName="border border-outline-variant/25" />
   ) : null;
 
   if (photo) {
     return (
-      <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
+      <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <header className={cn("page-break-avoid border-b pb-3", theme.divider)}>
           <div className="grid items-start gap-x-4 gap-y-2 [grid-template-columns:minmax(0,1fr)_144px]">
             <ResumeIdentity view={view} theme={theme} />
             <div className="row-span-2 flex justify-end">{photo}</div>
             {showSummary ? (
-              <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} className="min-w-0">
+              <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection} className="min-w-0">
                 <section className={theme.summaryCard}>
                   <SectionHeading label={view.labels.summary} theme={theme} />
                   <p className={cn("pr-1 text-[11px] leading-[1.42]", theme.subtleText)}>{view.content.summary}</p>
@@ -388,11 +480,11 @@ function StandardResumeHeader({ resume, theme, view, showSummary, activeSection 
   }
 
   return (
-    <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
+    <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
       <header className={cn("page-break-avoid border-b pb-3", theme.divider)}>
         <ResumeIdentity view={view} theme={theme} />
         {showSummary ? (
-          <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} className="mt-3 min-w-0">
+          <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection} className="mt-3 min-w-0">
             <section className={theme.summaryCard}>
               <SectionHeading label={view.labels.summary} theme={theme} />
               <p className={cn("text-[11px] leading-[1.42]", theme.subtleText)}>{view.content.summary}</p>
@@ -404,14 +496,14 @@ function StandardResumeHeader({ resume, theme, view, showSummary, activeSection 
   );
 }
 
-function ResumeSection({ resume, section, theme, view, activeSection }: { resume: ResumeDocument; section: ResumeContentSection; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
+function ResumeSection({ resume, section, theme, view, activeSection, onSelectSection }: { resume: ResumeDocument; section: ResumeContentSection; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection; onSelectSection?: (section: ResumeFormSection) => void }) {
   if (!hasRenderableContent(view, section)) {
     return null;
   }
 
   if (section === "summary") {
     return (
-      <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme}>
+      <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section className={theme.itemCard}>
           <SectionHeading label={view.labels.summary} theme={theme} />
           <p className={cn("text-[11px] leading-[1.45]", theme.subtleText)}>{view.content.summary}</p>
@@ -422,7 +514,7 @@ function ResumeSection({ resume, section, theme, view, activeSection }: { resume
 
   if (section === "skills") {
     return (
-      <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme}>
+      <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section className={theme.itemCard}>
           <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
           <div className="space-y-2">
@@ -440,7 +532,7 @@ function ResumeSection({ resume, section, theme, view, activeSection }: { resume
 
   if (section === "projects") {
     return (
-      <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme}>
+      <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section>
           <SectionHeading label={view.labels.projects} theme={theme} />
           <div className="space-y-2.5">
@@ -462,7 +554,7 @@ function ResumeSection({ resume, section, theme, view, activeSection }: { resume
 
   if (section === "experience") {
     return (
-      <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme}>
+      <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section>
           <SectionHeading label={view.labels.experience} theme={theme} />
           <div className="space-y-2.5">
@@ -485,7 +577,7 @@ function ResumeSection({ resume, section, theme, view, activeSection }: { resume
 
   if (section === "education") {
     return (
-      <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme}>
+      <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section>
           <SectionHeading label={view.labels.education} theme={theme} />
           <div className="space-y-2">
@@ -513,7 +605,7 @@ function ResumeSection({ resume, section, theme, view, activeSection }: { resume
         : view.activities.map((item) => ({ id: item.id, title: item.name, subtitle: item.organization, date: item.date, description: item.description }));
 
   return (
-    <PreviewSectionSpotlight section={section} activeSection={activeSection} theme={theme}>
+    <PreviewSectionSpotlight section={section} activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
       <section>
         <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
         <div className="space-y-2">
@@ -533,16 +625,16 @@ function ResumeSection({ resume, section, theme, view, activeSection }: { resume
   );
 }
 
-function StandardResumeLayout({ resume, theme, view, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
+function StandardResumeLayout({ resume, theme, view, activeSection, onSelectSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection; onSelectSection?: (section: ResumeFormSection) => void }) {
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(view, section));
   const showSummary = orderedSections.includes("summary");
   const bodySections = orderedSections.filter((section) => section !== "summary");
 
   return (
     <div className={theme.shell}>
-      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={showSummary} activeSection={activeSection} />
+      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={showSummary} activeSection={activeSection} onSelectSection={onSelectSection} />
       <div className={cn(theme.bodySpacing, theme.sectionSpacing)}>
-        {bodySections.map((section) => <ResumeSection key={section} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} />)}
+        {bodySections.map((section) => <ResumeSection key={section} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />)}
       </div>
       {theme.showSkillBand && view.allSkills.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-1.5 border-t border-primary/15 pt-2.5">
@@ -566,7 +658,7 @@ function SidebarCompactSection({ title, children, theme }: { title: string; chil
   );
 }
 
-function DarkPortfolioLayout({ resume, theme, view, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
+function DarkPortfolioLayout({ resume, theme, view, activeSection, onSelectSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection; onSelectSection?: (section: ResumeFormSection) => void }) {
   const experiences = view.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some(hasText));
   const projects = view.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role));
   const education = view.education.filter((item) => hasText(item.degree) || hasText(item.school));
@@ -578,7 +670,7 @@ function DarkPortfolioLayout({ resume, theme, view, activeSection }: { resume: R
       <div className="grid min-h-full [grid-template-columns:250px_minmax(0,1fr)]">
         <aside className="border-r border-white/10 p-6">
           <div className="space-y-5">
-            <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme}>
+            <PreviewSectionSpotlight section="personal" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
               <>
                 {resume.avatarUrl ? <ResumeAvatarFrame src={resume.avatarUrl} alt={view.content.personal.fullName || "Profile photo"} frame={resume.avatarFrame} transform={resume.avatarTransform} className={theme.photoClass} fallbackText={view.content.personal.fullName.slice(0, 1) || "A"} /> : null}
                 <div>
@@ -588,17 +680,17 @@ function DarkPortfolioLayout({ resume, theme, view, activeSection }: { resume: R
                 </div>
               </>
             </PreviewSectionSpotlight>
-            {hasText(view.content.summary) ? <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.summary} theme={theme}><p className="text-[10.5px] leading-[1.55] text-white/65">{view.content.summary}</p></SidebarCompactSection></PreviewSectionSpotlight> : null}
-            {education.length > 0 ? <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.education} theme={theme}>{education.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.school || item.degree || view.fallback.school}</div><div>{item.degree}</div><div className="text-white/55">{formatDateRange(item.startDate, item.endDate)}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
-            {certifications.length > 0 ? <PreviewSectionSpotlight section="certifications" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.certifications} theme={theme}>{certifications.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.name || view.fallback.certification}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
-            {awards.length > 0 ? <PreviewSectionSpotlight section="awards" activeSection={activeSection} theme={theme}><SidebarCompactSection title={view.labels.awards} theme={theme}>{awards.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.title || view.fallback.award}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
-            {view.allSkills.length > 0 ? <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme}><SidebarCompactSection title={getSkillSectionLabel(resume.industryFocus, view.locale).toUpperCase()} theme={theme}><div className="flex flex-wrap gap-1.5">{view.allSkills.slice(0, 18).map((skill) => <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>{skill}</span>)}</div></SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {hasText(view.content.summary) ? <PreviewSectionSpotlight section="summary" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><SidebarCompactSection title={view.labels.summary} theme={theme}><p className="text-[10.5px] leading-[1.55] text-white/65">{view.content.summary}</p></SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {education.length > 0 ? <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><SidebarCompactSection title={view.labels.education} theme={theme}>{education.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.school || item.degree || view.fallback.school}</div><div>{item.degree}</div><div className="text-white/55">{formatDateRange(item.startDate, item.endDate)}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {certifications.length > 0 ? <PreviewSectionSpotlight section="certifications" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><SidebarCompactSection title={view.labels.certifications} theme={theme}>{certifications.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.name || view.fallback.certification}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {awards.length > 0 ? <PreviewSectionSpotlight section="awards" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><SidebarCompactSection title={view.labels.awards} theme={theme}>{awards.map((item) => <article key={item.id} className="space-y-0.5 text-[10.5px] text-white/80"><div className="font-semibold text-white">{item.title || view.fallback.award}</div><div>{item.issuer}</div></article>)}</SidebarCompactSection></PreviewSectionSpotlight> : null}
+            {view.allSkills.length > 0 ? <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><SidebarCompactSection title={getSkillSectionLabel(resume.industryFocus, view.locale).toUpperCase()} theme={theme}><div className="flex flex-wrap gap-1.5">{view.allSkills.slice(0, 18).map((skill) => <span key={skill} className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold", theme.tag)}>{skill}</span>)}</div></SidebarCompactSection></PreviewSectionSpotlight> : null}
           </div>
         </aside>
         <section className="p-6">
           <div className="space-y-5">
-            {experiences.length > 0 ? <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme}><section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section></PreviewSectionSpotlight> : null}
-            {projects.length > 0 ? <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme}><section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || view.fallback.project}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section></PreviewSectionSpotlight> : null}
+            {experiences.length > 0 ? <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section></PreviewSectionSpotlight> : null}
+            {projects.length > 0 ? <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || view.fallback.project}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section></PreviewSectionSpotlight> : null}
           </div>
         </section>
       </div>
@@ -606,38 +698,46 @@ function DarkPortfolioLayout({ resume, theme, view, activeSection }: { resume: R
   );
 }
 
-function ModernColumnsLayout({ resume, theme, view, activeSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection }) {
+function ModernColumnsLayout({ resume, theme, view, activeSection, onSelectSection }: { resume: ResumeDocument; theme: PreviewTheme; view: ResumeView; activeSection?: ResumeFormSection; onSelectSection?: (section: ResumeFormSection) => void }) {
   const orderedSections = getSectionOrder(resume).filter((section) => hasRenderableContent(view, section));
   const leftSections = orderedSections.filter((section) => ["summary", "skills", "education", "certifications", "awards", "activities"].includes(section));
   const rightSections = orderedSections.filter((section) => ["experience", "projects"].includes(section));
 
   return (
     <div className={theme.shell}>
-      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={false} activeSection={activeSection} />
+      <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={false} activeSection={activeSection} onSelectSection={onSelectSection} />
       <div className={cn(theme.bodySpacing, "grid gap-5 [grid-template-columns:0.92fr_1.28fr]")}>
         <div className={cn("space-y-3 rounded-[1.5rem] bg-surface-container-low p-4", theme.divider)}>
-          {leftSections.map((section) => <ResumeSection key={`left-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} />)}
+          {leftSections.map((section) => <ResumeSection key={`left-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />)}
         </div>
         <div className={theme.sectionSpacing}>
-          {rightSections.map((section) => <ResumeSection key={`right-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} />)}
+          {rightSections.map((section) => <ResumeSection key={`right-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />)}
         </div>
       </div>
     </div>
   );
 }
 
-export function ResumeDocumentPreview({ resume, activeSection }: { resume: ResumeDocument; activeSection?: ResumeFormSection }) {
+export function ResumeDocumentPreview({
+  resume,
+  activeSection,
+  onSelectSection
+}: {
+  resume: ResumeDocument;
+  activeSection?: ResumeFormSection;
+  onSelectSection?: (section: ResumeFormSection) => void;
+}) {
   const theme = previewThemes[resume.templateId];
   const view = buildResumeView(resume);
 
   if (theme.kind === "dark-portfolio") {
-    return <DarkPortfolioLayout resume={resume} theme={theme} view={view} activeSection={activeSection} />;
+    return <DarkPortfolioLayout resume={resume} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />;
   }
 
   if (theme.kind === "modern-columns") {
-    return <ModernColumnsLayout resume={resume} theme={theme} view={view} activeSection={activeSection} />;
+    return <ModernColumnsLayout resume={resume} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />;
   }
 
-  return <StandardResumeLayout resume={resume} theme={theme} view={view} activeSection={activeSection} />;
+  return <StandardResumeLayout resume={resume} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />;
 }
 

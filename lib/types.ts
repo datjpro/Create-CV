@@ -1,4 +1,4 @@
-﻿export type TemplateId =
+export type TemplateId =
   | "minimal"
   | "professional"
   | "creative"
@@ -6,7 +6,12 @@
   | "corporate-slate"
   | "compact-fresher"
   | "modern-columns"
-  | "clean-showcase";
+  | "clean-showcase"
+  | "nordic-minimal"
+  | "emerald-executive"
+  | "tech-matrix"
+  | "editorial-elegance"
+  | "vibrant-gradient";
 
 export type AuthProviderId = "password" | "google" | "github" | "demo";
 

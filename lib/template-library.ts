@@ -124,6 +124,76 @@ export const templateLibrary: TemplatePreset[] = [
     layoutStyle: "Showcase one-column",
     recommendedCareerStages: ["student", "under_3_years", "3_plus_years"],
     notes: "Ideal when projects and skill depth should stand out more than a traditional corporate timeline."
+  },
+  {
+    id: "nordic-minimal",
+    category: "Minimal",
+    name: "The Nordic Modern",
+    hook: "Scandinavian editorial style with typography contrast and line geometry",
+    description: "A pristine minimal template featuring refined serif headers, warm neutral borders, and clear metadata hierarchy.",
+    badge: "Design Pick",
+    featuredCopy: "Designed for product, UX/UI, design lead and creative strategists who appreciate typography and whitespace.",
+    bestForIndustries: ["marketing", "general"],
+    atsReadabilityLevel: "ATS-first",
+    layoutStyle: "Scandinavian minimal",
+    recommendedCareerStages: ["under_3_years", "3_plus_years"],
+    notes: "Harmonious line geometry and generous whitespace make reading effortless."
+  },
+  {
+    id: "emerald-executive",
+    category: "Executive",
+    name: "The Emerald Executive",
+    hook: "Deep emerald identity header with high-trust corporate metrics",
+    description: "An authoritative executive resume with rich forest emerald headers, gold subtle accents, and double-column metric alignment.",
+    badge: "Executive",
+    featuredCopy: "Tailored for senior directors, operations leaders, managers and high-responsibility corporate executives.",
+    bestForIndustries: ["finance", "general"],
+    atsReadabilityLevel: "ATS-first",
+    layoutStyle: "Emerald banner executive",
+    recommendedCareerStages: ["3_plus_years"],
+    notes: "Exudes authority, trust, and structured leadership impact."
+  },
+  {
+    id: "tech-matrix",
+    category: "Technical",
+    name: "The Tech Matrix",
+    hook: "Code-inspired architecture built specifically for software engineers",
+    description: "A dark terminal-accented tech template with code-block skill tags, GitHub highlights, and project metrics spotlight.",
+    badge: "Developer",
+    featuredCopy: "Engineered for full-stack developers, DevOps, systems architects and data scientists.",
+    bestForIndustries: ["it"],
+    atsReadabilityLevel: "ATS-safe",
+    layoutStyle: "Developer matrix layout",
+    recommendedCareerStages: ["student", "under_3_years", "3_plus_years"],
+    notes: "Highlights technical stack, GitHub repositories, system architecture and code contributions."
+  },
+  {
+    id: "editorial-elegance",
+    category: "Editorial",
+    name: "The Editorial Serif",
+    hook: "Publication-style elegance with high contrast serif headings",
+    description: "A sophisticated magazine-style resume layout with Playfair-inspired typography, elegant quotes, and vertical accent rules.",
+    badge: "Premium",
+    featuredCopy: "Ideal for marketing leaders, PR strategists, journalists, architects and brand consultants.",
+    bestForIndustries: ["marketing", "general"],
+    atsReadabilityLevel: "ATS-safe",
+    layoutStyle: "Publication editorial",
+    recommendedCareerStages: ["under_3_years", "3_plus_years"],
+    notes: "Stand out with publication-grade editorial styling and refined serif contrast."
+  },
+  {
+    id: "vibrant-gradient",
+    category: "Creative",
+    name: "The Modern Accent",
+    hook: "Contemporary gradient identity with pill badges and modern cards",
+    description: "A dynamic layout featuring a vibrant Indigo-to-Teal header, floating skill cards, and modern badge badges.",
+    badge: "Trending",
+    featuredCopy: "Perfect for tech startups, growth marketers, digital designers, and modern product leads.",
+    bestForIndustries: ["it", "marketing", "general"],
+    atsReadabilityLevel: "ATS-safe",
+    layoutStyle: "Gradient banner modern",
+    recommendedCareerStages: ["student", "under_3_years", "3_plus_years"],
+    notes: "Catch immediate visual attention while keeping machine readability intact."
   }
 ];
 
