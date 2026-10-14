@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Cropper from "react-easy-crop";
 import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
@@ -20,7 +21,7 @@ import {
   getSkillsHint,
   getSummaryHint
 } from "@/lib/resume-metadata";
-import { getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
+import { exportToEnglishResume, getResume, saveResume, uploadAvatar } from "@/lib/services/resume-service";
 import type { AvatarFrame, AvatarTransform, Locale, ResumeDocument, ResumeFormSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useResumeEditorStore } from "@/store/resume-editor-store";
@@ -114,7 +115,7 @@ function SectionCard({
     <section
       data-editor-section={section}
       className={cn(
-        "rounded-[1.75rem] bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 scroll-my-24 border",
+        "rounded-[1.75rem] bg-surface-container-lowest p-5 shadow-sm transition-all duration-300 scroll-my-24 border",
         active
           ? "border-primary ring-2 ring-primary/30 shadow-lg shadow-primary/5"
           : "border-outline-variant/15 hover:border-outline-variant/30"
@@ -129,8 +130,8 @@ function SectionCard({
           </span>
         ) : null}
       </div>
-      <p className="mt-2 text-sm leading-6 text-on-surface-variant">{description}</p>
-      <div className="mt-6 space-y-4">{children}</div>
+      <p className="mt-1.5 text-sm leading-6 text-on-surface-variant">{description}</p>
+      <div className="mt-4 space-y-3.5">{children}</div>
     </section>
   );
 }
@@ -158,6 +159,7 @@ function getCompletionScore(resume: ResumeDocument) {
 }
 
 export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
+  const router = useRouter();
   const { user } = useAuth();
   const { locale, copy } = useI18n();
   const printRef = useRef<HTMLDivElement | null>(null);
@@ -222,6 +224,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [exportingEnglish, setExportingEnglish] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [mobileView, setMobileView] = useState<"build" | "preview">("build");
@@ -335,6 +338,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const progress = useMemo(() => (resume ? getCompletionScore(resume) : 0), [resume]);
   const activeTemplate = resume ? copy.templateMeta[resume.templateId] : null;
   const activeContent = resume ? resume.content[resume.contentLocale] : null;
+  const isEnglishResume = resume?.contentLocale === "en" || Boolean(resume?.title?.toLowerCase().includes("(english)"));
   const avatarAspect = resume ? getAvatarAspect(resume.avatarFrame) : 1;
   const avatarSourceKey = resume ? `${resume.id}:${resume.avatarFrame}:${resume.avatarUrl}` : "";
   const localeOptions = useMemo(
@@ -348,7 +352,8 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: printTitle ? `${printTitle.replace(/\s+/g, "-").toLowerCase()}` : "resume",
-    pageStyle: "@page { size: A4; margin: 8mm; } .resume-paper { width: 210mm; min-height: 297mm; }"
+    pageStyle:
+      "@page { size: A4; margin: 8mm; } .resume-paper { width: 210mm; min-height: 297mm; } .screen-only, .screen-only * { display: none !important; } [data-preview-section] { box-shadow: none !important; background-color: transparent !important; background: transparent !important; transform: none !important; outline: none !important; padding: 0 !important; margin: 0 !important; border: none !important; --tw-ring-shadow: 0 0 #0000 !important; --tw-ring-offset-shadow: 0 0 #0000 !important; --tw-shadow: 0 0 #0000 !important; --tw-shadow-colored: 0 0 #0000 !important; }"
   });
 
   const handlePreviewMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -525,6 +530,30 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
     setStatusMessage(targetLocale === "en" ? copy.editor.copiedToEn : copy.editor.copiedToVi);
   }
 
+  async function handleExportEnglishResume() {
+    if (!user || !resume || isEnglishResume) {
+      return;
+    }
+
+    setExportingEnglish(true);
+    setError("");
+    setStatusMessage(copy.editor.exportingEnglish);
+
+    try {
+      if (dirty) {
+        await saveResume(resume);
+      }
+
+      const englishResume = await exportToEnglishResume(user.uid, resume);
+      setStatusMessage(copy.editor.exportedEnglishSuccess);
+      router.push(`/resume/${englishResume.id}/edit`);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Failed to export English resume.");
+    } finally {
+      setExportingEnglish(false);
+    }
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface px-6">
@@ -566,7 +595,28 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-on-surface">{progress}% {copy.editor.complete}</div>
-            <button type="button" onClick={handleSave} disabled={saving} className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest disabled:opacity-60">
+            {!isEnglishResume ? (
+              <button
+                type="button"
+                onClick={handleExportEnglishResume}
+                disabled={exportingEnglish || saving}
+                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
+                title={copy.editor.exportEnglishDescription}
+              >
+                {exportingEnglish ? (
+                  <>
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    {copy.editor.exportingEnglish}
+                  </>
+                ) : (
+                  <>
+                    <span>🌐</span>
+                    {copy.editor.exportEnglish}
+                  </>
+                )}
+              </button>
+            ) : null}
+            <button type="button" onClick={handleSave} disabled={saving || exportingEnglish} className="rounded-2xl bg-surface-container-high px-5 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-highest disabled:opacity-60">
               {saving ? copy.common.saving : copy.common.save}
             </button>
             <button type="button" onClick={() => handlePrint()} className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-on-primary transition hover:opacity-95" title={copy.editor.exportHint}>
@@ -598,7 +648,7 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
 
       <div className="grid min-h-[calc(100vh-124px)] lg:grid-cols-2">
         <section className={cn("border-r border-outline-variant/20 bg-surface-container-low", mobileView === "preview" ? "hidden lg:block" : "block")}>
-          <div className="mx-auto max-w-3xl space-y-6 px-6 py-8 lg:px-8">
+          <div className="mx-auto max-w-3xl space-y-4 px-6 py-6 lg:px-8">
             {statusMessage ? <div className="rounded-2xl bg-primary-fixed px-4 py-3 text-sm text-on-primary-fixed-variant">{statusMessage}</div> : null}
             {error ? <div className="rounded-2xl bg-error-container px-4 py-3 text-sm text-on-error-container">{error}</div> : null}
 
@@ -618,6 +668,43 @@ export function ResumeEditorScreen({ resumeId }: { resumeId: string }) {
                   </button>
                 </div>
               </div>
+
+              {!isEnglishResume ? (
+                <div className="rounded-[1.5rem] border border-emerald-500/30 bg-emerald-50/50 p-5 dark:border-emerald-500/20 dark:bg-emerald-950/20">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🌐</span>
+                        <h4 className="font-bold text-on-surface">{copy.editor.exportEnglish}</h4>
+                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                          New Document
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-on-surface-variant">
+                        {copy.editor.exportEnglishDescription}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleExportEnglishResume}
+                      disabled={exportingEnglish || saving}
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
+                    >
+                      {exportingEnglish ? (
+                        <>
+                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          {copy.editor.exportingEnglish}
+                        </>
+                      ) : (
+                        <>
+                          <span>🌐</span>
+                          {copy.editor.exportEnglish}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">

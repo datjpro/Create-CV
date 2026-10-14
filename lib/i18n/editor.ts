@@ -1,4 +1,4 @@
-﻿import type { Locale, ResumeFormSection } from "@/lib/types";
+import type { Locale, ResumeFormSection } from "@/lib/types";
 
 const sectionLabels: Record<Locale, Record<ResumeFormSection, string>> = {
   en: {
@@ -40,6 +40,10 @@ export function getEditorCopy(locale: Locale) {
         exportPdf: "Xuất PDF",
         exportHint:
           "Hãy dùng Save as PDF trong hộp thoại in của trình duyệt. Tắt header và footer của trình duyệt để file sạch nhất.",
+        exportEnglish: "Xuất sang CV Tiếng Anh",
+        exportEnglishDescription: "Tạo một bản CV mới và tự động dịch toàn bộ nội dung sang tiếng Anh chuẩn chuyên nghiệp.",
+        exportingEnglish: "Đang dịch sang tiếng Anh...",
+        exportedEnglishSuccess: "Đã tạo bản CV Tiếng Anh mới thành công!",
         build: "Soạn thảo",
         preview: "Xem trước",
         saved: "Đã lưu tất cả thay đổi.",
@@ -219,6 +223,10 @@ export function getEditorCopy(locale: Locale) {
         exportPdf: "Export PDF",
         exportHint:
           "Use Save as PDF in your browser print dialog. Turn off the browser headers and footers for the cleanest file.",
+        exportEnglish: "Export to English CV",
+        exportEnglishDescription: "Create a new resume copy with all content automatically translated into professional English.",
+        exportingEnglish: "Translating to English...",
+        exportedEnglishSuccess: "English resume copy created successfully!",
         build: "Build",
         preview: "Preview",
         saved: "Saved all changes.",

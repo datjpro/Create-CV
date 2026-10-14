@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   collection,
@@ -43,6 +43,7 @@ import type {
   SkillGroup,
   TemplateId
 } from "@/lib/types";
+import { translateResumeContentToEnglish } from "@/lib/services/translation-service";
 
 const DEMO_RESUMES_KEY = "create-cv-demo-resumes";
 const LOCAL_AVATAR_KEY = "create-cv-local-avatar-map";
@@ -292,7 +293,12 @@ function normalizeLocalizedContent(
       shared.experiences,
       content?.experiences ?? fallback?.experiences,
       createEmptyLocalizedExperience
-    ),
+    ).map((item) => ({
+      ...item,
+      bullets: Array.isArray(item.bullets)
+        ? item.bullets.map((bullet) => bullet.trim()).filter(Boolean)
+        : []
+    })),
     education: alignLocalizedItems(shared.education, content?.education ?? fallback?.education, createEmptyLocalizedEducation),
     skillGroups: normalizeSkillGroups(content?.skillGroups ?? fallback?.skillGroups, locale),
     projects: alignLocalizedItems(shared.projects, content?.projects ?? fallback?.projects, createEmptyLocalizedProject),
@@ -615,6 +621,37 @@ export async function saveResume(resume: ResumeDocument) {
 export async function duplicateResume(userId: string, resumeId: string) {
   const source = ensureResumeBelongsToUser(await getResume(userId, resumeId), userId);
   const duplicate = cloneResume(source);
+
+  saveLocalAvatar(duplicate);
+
+  if (firebaseDb) {
+    const reference = doc(firebaseDb, "users", userId, "resumes", duplicate.id);
+    await setDoc(reference, stripLocalAvatar(duplicate));
+    return duplicate;
+  }
+
+  const resumes = getDemoResumes();
+  resumes.push(stripLocalAvatar(duplicate));
+  setDemoResumes(resumes);
+  return duplicate;
+}
+
+export async function exportToEnglishResume(userId: string, sourceOrId: ResumeDocument | string): Promise<ResumeDocument> {
+  const source = typeof sourceOrId === "string"
+    ? ensureResumeBelongsToUser(await getResume(userId, sourceOrId), userId)
+    : sourceOrId;
+
+  const duplicate = cloneResume(source);
+  const baseTitle = (source.title || "Resume").replace(/\s*\(English\)$/i, "");
+  duplicate.title = `${baseTitle} (English)`;
+  duplicate.contentLocale = "en";
+
+  // Base content is preferably Vietnamese (to translate to EN), or current active content
+  const baseContent = source.content.vi?.personal?.fullName ? source.content.vi : (source.content.en || source.content.vi);
+  const translatedEnglishContent = await translateResumeContentToEnglish(baseContent);
+
+  duplicate.content.en = translatedEnglishContent;
+  duplicate.content.vi = structuredClone(baseContent);
 
   saveLocalAvatar(duplicate);
 

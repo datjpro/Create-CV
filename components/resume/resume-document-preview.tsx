@@ -36,8 +36,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-primary/10 text-on-surface",
     subtleText: "text-on-surface-variant",
     photoClass: "h-[198px] w-[144px] rounded-[1rem]",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3"
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2"
   },
   minimal: {
     kind: "standard",
@@ -48,8 +48,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-surface-container-low text-on-surface",
     subtleText: "text-on-surface-variant",
     photoClass: "h-[188px] w-[140px] rounded-[1rem]",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3"
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2"
   },
   creative: {
     kind: "standard",
@@ -60,8 +60,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-primary/10 text-primary",
     subtleText: "text-on-surface-variant",
     photoClass: "h-[196px] w-[144px] rounded-[1.2rem]",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2",
     summaryCard: "rounded-[1.25rem] bg-primary/5 p-3",
     showSkillBand: true
   },
@@ -74,8 +74,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-slate-200 text-slate-700",
     subtleText: "text-slate-600",
     photoClass: "h-[192px] w-[140px] rounded-[1rem]",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2",
     itemCard: "rounded-[1rem] border border-slate-200 bg-white p-3"
   },
   "compact-fresher": {
@@ -87,8 +87,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-primary/10 text-primary",
     subtleText: "text-on-surface-variant",
     photoClass: "h-[182px] w-[132px] rounded-[1rem]",
-    bodySpacing: "mt-3",
-    sectionSpacing: "space-y-2.5"
+    bodySpacing: "mt-2.5",
+    sectionSpacing: "space-y-1.5"
   },
   "clean-showcase": {
     kind: "standard",
@@ -99,8 +99,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-primary/12 text-primary",
     subtleText: "text-on-surface-variant",
     photoClass: "h-[196px] w-[144px] rounded-[1.2rem]",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2",
     itemCard: "rounded-[1rem] border border-primary/15 bg-primary/5 p-3",
     summaryCard: "rounded-[1.25rem] border border-primary/15 bg-primary/5 p-3",
     showSkillBand: true
@@ -115,7 +115,7 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     subtleText: "text-white/65",
     photoClass: "h-[220px] w-[160px] rounded-[1.25rem]",
     bodySpacing: "",
-    sectionSpacing: "space-y-4",
+    sectionSpacing: "space-y-3",
     itemCard: "rounded-[1.1rem] border border-white/10 bg-white/5 p-4",
     showSkillBand: false
   },
@@ -128,8 +128,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-primary/10 text-primary",
     subtleText: "text-on-surface-variant",
     photoClass: "h-[188px] w-[140px] rounded-[1rem]",
-    bodySpacing: "mt-4",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2",
     itemCard: "rounded-[1rem] bg-surface-container-low p-3"
   },
   "nordic-minimal": {
@@ -141,8 +141,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-stone-200/70 text-stone-800 border border-stone-300/50",
     subtleText: "text-stone-600",
     photoClass: "h-[190px] w-[140px] rounded-[0.75rem] border border-stone-300",
-    bodySpacing: "mt-4",
-    sectionSpacing: "space-y-3.5",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2.5",
     summaryCard: "rounded-[0.75rem] border-l-4 border-stone-800 bg-stone-100/80 p-3.5 italic",
     showSkillBand: true
   },
@@ -155,8 +155,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-emerald-50 text-emerald-900 border border-emerald-200",
     subtleText: "text-emerald-950/80",
     photoClass: "h-[196px] w-[144px] rounded-[1rem] border-2 border-emerald-800/30",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2",
     itemCard: "rounded-[0.85rem] border border-emerald-100 bg-emerald-50/40 p-3",
     summaryCard: "rounded-[1rem] border border-emerald-200 bg-emerald-50/60 p-3.5"
   },
@@ -169,8 +169,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-slate-900 text-teal-300 font-mono text-[9.5pt]",
     subtleText: "text-slate-700",
     photoClass: "h-[188px] w-[140px] rounded-lg border border-slate-700",
-    bodySpacing: "mt-3",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-2.5",
+    sectionSpacing: "space-y-2",
     itemCard: "rounded-xl border border-slate-200 bg-slate-50/80 p-3 font-sans",
     summaryCard: "rounded-xl border border-teal-500/30 bg-teal-50/30 p-3 font-sans",
     showSkillBand: true
@@ -184,8 +184,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-amber-100/60 text-amber-950 border border-amber-300/40",
     subtleText: "text-stone-700",
     photoClass: "h-[200px] w-[148px] rounded-[1.2rem] border border-amber-900/20",
-    bodySpacing: "mt-4",
-    sectionSpacing: "space-y-3.5",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2.5",
     summaryCard: "rounded-[1rem] border-l-2 border-amber-800 bg-amber-50/50 p-3.5 font-serif italic"
   },
   "vibrant-gradient": {
@@ -197,8 +197,8 @@ const previewThemes: Record<TemplateId, PreviewTheme> = {
     tag: "bg-gradient-to-r from-indigo-50 to-teal-50 text-indigo-950 border border-indigo-200/80 font-medium",
     subtleText: "text-slate-700",
     photoClass: "h-[192px] w-[140px] rounded-[1.25rem] border-2 border-indigo-400/40",
-    bodySpacing: "mt-3.5",
-    sectionSpacing: "space-y-3",
+    bodySpacing: "mt-3",
+    sectionSpacing: "space-y-2",
     itemCard: "rounded-[1rem] border border-indigo-100 bg-indigo-50/30 p-3",
     summaryCard: "rounded-[1.25rem] border border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-teal-50/30 p-3.5",
     showSkillBand: true
@@ -382,7 +382,7 @@ function getSectionLabel(section: ResumeContentSection, resume: ResumeDocument, 
 }
 
 function SectionHeading({ label, theme }: { label: string; theme: PreviewTheme }) {
-  return <h2 className={cn("mb-2 border-b pb-1 font-[var(--font-headline)] text-[10.5px] font-extrabold tracking-[0.18em]", theme.heading)}>{label}</h2>;
+  return <h2 className={cn("mb-1.5 border-b pb-0.5 font-[var(--font-headline)] text-[10.5px] font-extrabold tracking-[0.18em]", theme.heading)}>{label}</h2>;
 }
 
 function PreviewSectionSpotlight({
@@ -412,11 +412,11 @@ function PreviewSectionSpotlight({
         }
       }}
       className={cn(
-        "relative scroll-my-24 transition-all duration-300 rounded-xl p-2 -m-2",
-        onSelectSection && "cursor-pointer hover:ring-2 hover:ring-primary/40 hover:bg-primary/[0.02]",
+        "relative scroll-my-24 transition-all duration-300 rounded-xl p-1.5 -m-1.5 print:p-0 print:m-0 print:transform-none print:shadow-none print:ring-0 print:bg-transparent",
+        onSelectSection && "cursor-pointer hover:ring-2 hover:ring-primary/40 hover:bg-primary/[0.02] print:cursor-default print:hover:ring-0 print:hover:bg-transparent",
         active && [
-          "ring-2 ring-primary bg-primary/[0.04] shadow-lg shadow-primary/10 scale-[1.005]",
-          theme.kind === "dark-portfolio" ? "ring-white bg-white/[0.08] text-white" : "ring-primary"
+          "ring-2 ring-primary bg-primary/[0.04] shadow-lg shadow-primary/10 scale-[1.005] print:ring-0 print:ring-transparent print:bg-transparent print:shadow-none print:scale-100",
+          theme.kind === "dark-portfolio" ? "ring-white bg-white/[0.08] text-white print:ring-0 print:bg-transparent" : "ring-primary print:ring-0"
         ],
         className
       )}
@@ -517,7 +517,7 @@ function ResumeSection({ resume, section, theme, view, activeSection, onSelectSe
       <PreviewSectionSpotlight section="skills" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section className={theme.itemCard}>
           <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {view.skills.filter((group) => hasText(group.name) || group.skills.some(hasText)).map((group) => (
               <div key={group.id} className="text-[11px] leading-[1.4] text-on-surface">
                 <span className={cn("font-semibold", theme.accentText)}>{group.name || "Skill Group"}: </span>
@@ -535,7 +535,7 @@ function ResumeSection({ resume, section, theme, view, activeSection, onSelectSe
       <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section>
           <SectionHeading label={view.labels.projects} theme={theme} />
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {view.projects.filter((item) => hasText(item.name) || hasText(item.description) || hasText(item.role)).map((project) => (
               <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}>
                 <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
@@ -557,7 +557,7 @@ function ResumeSection({ resume, section, theme, view, activeSection, onSelectSe
       <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section>
           <SectionHeading label={view.labels.experience} theme={theme} />
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {view.experiences.filter((item) => hasText(item.jobTitle) || hasText(item.employer) || item.bullets.some(hasText)).map((item) => (
               <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
                 <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
@@ -580,7 +580,7 @@ function ResumeSection({ resume, section, theme, view, activeSection, onSelectSe
       <PreviewSectionSpotlight section="education" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
         <section>
           <SectionHeading label={view.labels.education} theme={theme} />
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {view.education.filter((item) => hasText(item.degree) || hasText(item.school)).map((item) => (
               <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
                 <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
@@ -608,7 +608,7 @@ function ResumeSection({ resume, section, theme, view, activeSection, onSelectSe
     <PreviewSectionSpotlight section={section} activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}>
       <section>
         <SectionHeading label={getSectionLabel(section, resume, view)} theme={theme} />
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {items.filter((item) => hasText(item.title) || hasText(item.subtitle)).map((item) => (
             <article key={item.id} className={cn("page-break-avoid", theme.itemCard)}>
               <div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-on-surface">
@@ -688,8 +688,8 @@ function DarkPortfolioLayout({ resume, theme, view, activeSection, onSelectSecti
           </div>
         </aside>
         <section className="p-6">
-          <div className="space-y-5">
-            {experiences.length > 0 ? <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-4">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section></PreviewSectionSpotlight> : null}
+          <div className="space-y-3.5">
+            {experiences.length > 0 ? <PreviewSectionSpotlight section="experience" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><section><SectionHeading label={view.labels.experience} theme={theme} /><div className="space-y-3">{experiences.map((item) => <article key={item.id} className={cn("grid gap-4 page-break-avoid", theme.itemCard, "[grid-template-columns:72px_minmax(0,1fr)]")}><div className="pt-1 text-[10.5px] font-semibold text-white/55">{formatDateRange(item.startDate, item.endDate, item.current)}</div><div className="border-l border-white/10 pl-4"><div className="text-[12px] font-semibold text-white">{item.jobTitle || view.fallback.role}</div><p className="mt-0.5 text-[10.5px] text-white/60">{[item.employer, item.location].filter(hasText).join(" | ")}</p>{item.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{item.description}</p> : null}{item.bullets.filter(hasText).length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-4 text-[10.5px] leading-[1.45] text-white/70">{item.bullets.filter(hasText).map((bullet) => <li key={bullet}>{bullet}</li>)}</ul> : null}</div></article>)}</div></section></PreviewSectionSpotlight> : null}
             {projects.length > 0 ? <PreviewSectionSpotlight section="projects" activeSection={activeSection} theme={theme} onSelectSection={onSelectSection}><section><SectionHeading label={view.labels.projects} theme={theme} /><div className="grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className={cn("page-break-avoid", theme.itemCard)}><div className="flex items-start justify-between gap-3 text-[11px] font-semibold text-white"><span>{project.name || view.fallback.project}</span><span className="text-white/55">{formatDateRange(project.startDate, project.endDate)}</span></div>{renderInlineItems(compactInlineItems([project.role ? { label: project.role } : null, project.link ? { label: formatLinkLabel(project.link), href: normalizeExternalHref(project.link), external: true } : null]), "mt-1 text-[10.5px] italic", theme)}{project.description ? <p className="mt-2 text-[10.5px] leading-[1.5] text-white/70">{project.description}</p> : null}</article>)}</div></section></PreviewSectionSpotlight> : null}
           </div>
         </section>
@@ -707,7 +707,7 @@ function ModernColumnsLayout({ resume, theme, view, activeSection, onSelectSecti
     <div className={theme.shell}>
       <StandardResumeHeader resume={resume} theme={theme} view={view} showSummary={false} activeSection={activeSection} onSelectSection={onSelectSection} />
       <div className={cn(theme.bodySpacing, "grid gap-5 [grid-template-columns:0.92fr_1.28fr]")}>
-        <div className={cn("space-y-3 rounded-[1.5rem] bg-surface-container-low p-4", theme.divider)}>
+        <div className={cn("space-y-2 rounded-[1.5rem] bg-surface-container-low p-4", theme.divider)}>
           {leftSections.map((section) => <ResumeSection key={`left-${section}`} resume={resume} section={section} theme={theme} view={view} activeSection={activeSection} onSelectSection={onSelectSection} />)}
         </div>
         <div className={theme.sectionSpacing}>

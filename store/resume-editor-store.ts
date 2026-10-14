@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 
 import {
   createEmptyActivity,
@@ -260,10 +260,7 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
           ...content,
           experiences: updateById(content.experiences, id, (item) => ({
             ...item,
-            bullets: value
-              .split("\n")
-              .map((entry) => entry.trim())
-              .filter(Boolean)
+            bullets: value ? value.split("\n") : []
           }))
         }))
       )
@@ -442,10 +439,7 @@ export const useResumeEditorStore = create<ResumeEditorState>((set) => ({
           ...content,
           skillGroups: updateById(content.skillGroups, id, (item) => ({
             ...item,
-            skills: value
-              .split("\n")
-              .map((entry) => entry.trim())
-              .filter(Boolean)
+            skills: value ? value.split("\n") : []
           }))
         }))
       )

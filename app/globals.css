@@ -207,6 +207,21 @@ button {
     margin: 0 auto !important;
   }
 
+  [data-preview-section] {
+    box-shadow: none !important;
+    background-color: transparent !important;
+    background: transparent !important;
+    transform: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+  }
+
   .resume-print-root {
     width: auto !important;
   }
